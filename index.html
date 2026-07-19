@@ -12,16 +12,19 @@
 <title>Forge — Carnet d'entraînement</title>
 <style>
   :root{
-    --bg:#0F1317; --surface:#171D24; --surface2:#202932; --line:#2B3641;
-    --ink:#EDF1F5; --muted:#A6B2BF; --faint:#6E7A87;
-    --gold:#E9C46A; --coral:#F0796B; --mint:#6BC7A4; --violet:#B48CE8; --blue:#7FA9E8;
-    --r:14px; --pad:16px;
+    --bg:#0B0D12; --surface:rgba(255,255,255,.045); --surface2:rgba(255,255,255,.08);
+    --line:rgba(255,255,255,.09);
+    --ink:#F1F2F6; --muted:#A7AEBC; --faint:#6F7787;
+    --gold:#A78BFA; --rest:#FF8A3D; --coral:#F87171; --mint:#34D399; --violet:#B48CE8; --blue:#60A5FA;
+    --btn-ink:#17103A;
+    --r:16px; --pad:16px;
     --nav-h:calc(64px + env(safe-area-inset-bottom,0px));
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
-    background:var(--bg); color:var(--ink);
+    background:radial-gradient(140% 60% at 50% -8%, #1A1330 0%, #0B0D12 55%) fixed var(--bg);
+    color:var(--ink);
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     font-size:16px; line-height:1.45;
     overscroll-behavior-y:none;
@@ -31,7 +34,8 @@
 
   /* ---------- En-tête ---------- */
   .app-hdr{
-    position:sticky;top:0;z-index:50;background:linear-gradient(var(--bg) 78%,rgba(15,19,23,0));
+    position:sticky;top:0;z-index:50;background:linear-gradient(rgba(11,13,18,.94) 70%,rgba(11,13,18,0));
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
     padding:calc(10px + env(safe-area-inset-top,0px)) var(--pad) 8px;
   }
   .wordmark{display:flex;align-items:baseline;gap:10px}
@@ -66,7 +70,7 @@
     flex:0 0 auto;padding:7px 14px;border-radius:999px;border:1px solid var(--line);
     background:var(--surface);color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap;
   }
-  .chip.on{background:var(--ink);color:#12161A;border-color:var(--ink)}
+  .chip.on{background:var(--gold);color:var(--btn-ink);border-color:var(--gold)}
   .chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
   .selects{display:flex;gap:8px;margin-top:8px}
   .selects select{
@@ -109,7 +113,8 @@
   .overlay.show{opacity:1;pointer-events:auto}
   .sheet{
     position:fixed;left:0;right:0;bottom:0;z-index:100;
-    background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);
+    background:rgba(20,22,32,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-radius:20px 20px 0 0;border-top:1px solid var(--line);
     max-height:82vh;overflow-y:auto;transform:translateY(105%);transition:transform .26s cubic-bezier(.32,.72,.35,1);
     padding:10px var(--pad) calc(24px + env(safe-area-inset-bottom,0px));
   }
@@ -145,11 +150,11 @@
   .cal-day:active{background:var(--surface2)}
   .cal-day.out{color:var(--faint);opacity:.4}
   .cal-day.today{border-color:var(--gold);color:var(--ink);font-weight:700}
-  .cal-day.sel{background:var(--ink);color:#12161A;font-weight:800}
+  .cal-day.sel{background:var(--gold);color:var(--btn-ink);font-weight:800}
   .cal-day .dots{display:flex;gap:3px;position:absolute;bottom:6px}
   .cal-day .dots i{width:4px;height:4px;border-radius:50%;background:var(--gold)}
   .cal-day .dots i.done{background:var(--mint)}
-  .cal-day.sel .dots i{background:#12161A}
+  .cal-day.sel .dots i{background:var(--btn-ink)}
   .day-panel{margin-top:16px}
   .day-panel h3{font-size:15px;font-weight:750;margin-bottom:10px;text-transform:capitalize}
   .day-empty{
@@ -200,7 +205,7 @@
   .swatches{display:flex;gap:9px;margin-top:10px}
   .sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;flex:0 0 auto}
   .sw.on{border-color:var(--ink)}
-  .jour-card{background:var(--surface);border:1px solid var(--line);
+  .jour-card{background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.28);
     border-radius:var(--r);margin-bottom:12px;overflow:hidden}
   .jour-head{display:flex;align-items:center;gap:4px;padding:6px 6px 6px 14px;
     border-bottom:1px solid var(--line);background:var(--surface2)}
@@ -222,7 +227,7 @@
   .row-add:active{background:var(--surface2)}
   .actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
   .btn{padding:14px;border-radius:12px;font-weight:750;text-align:center;width:100%;font-size:15px}
-  .btn.primary{background:var(--gold);color:#191405}
+  .btn.primary{background:var(--gold);color:var(--btn-ink);box-shadow:0 6px 22px rgba(139,92,246,.28)}
   .btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
   .btn.danger{background:none;border:1px solid #8a3d38;color:var(--coral)}
   .btn:active{opacity:.85}
@@ -264,7 +269,7 @@
     border-radius:12px;padding:3px;gap:3px}
   .seg-toggle button{flex:1;padding:10px;border-radius:9px;font-weight:750;
     font-size:14px;color:var(--muted)}
-  .seg-toggle button.on{background:var(--ink);color:#12161A}
+  .seg-toggle button.on{background:var(--gold);color:var(--btn-ink)}
   .ps-head{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
   .ps-head label{font-size:13px;color:var(--muted);font-weight:650}
   .switch{width:52px;height:30px;border-radius:999px;background:var(--surface2);
@@ -272,7 +277,7 @@
   .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;
     border-radius:50%;background:var(--faint);transition:.18s}
   .switch.on{background:var(--gold);border-color:var(--gold)}
-  .switch.on::after{left:25px;background:#191405}
+  .switch.on::after{left:25px;background:var(--btn-ink)}
   .ps-row{display:flex;align-items:center;gap:8px}
   .ps-row .psn{flex:1;font-size:13px;color:var(--muted);font-weight:650}
   .ps-row .cfg-inp{width:86px;padding:9px}
@@ -299,7 +304,7 @@
   .spill{min-width:36px;height:36px;padding:0 8px;border-radius:10px;display:flex;align-items:center;
     justify-content:center;background:var(--surface);border:1px solid var(--line);
     color:var(--faint);font-weight:750;font-size:14px}
-  .spill.done{background:var(--mint);border-color:var(--mint);color:#0F1A15}
+  .spill.done{background:var(--mint);border-color:var(--mint);color:#062018}
   .spill.cur{border-color:var(--gold);color:var(--gold)}
   .big-timer{font-size:74px;font-weight:800;text-align:center;margin:16px 0 4px;
     font-variant-numeric:tabular-nums;letter-spacing:.01em;line-height:1}
@@ -356,12 +361,20 @@
   .ctrl-row{display:flex;justify-content:center;gap:16px;margin-top:14px;align-items:center}
   .cbtn{width:56px;height:56px;border-radius:50%;background:var(--surface);border:1px solid var(--line);
     display:flex;align-items:center;justify-content:center;color:var(--ink)}
-  .cbtn.main{width:68px;height:68px;background:var(--gold);border-color:var(--gold);color:#191405}
+  .cbtn.main{width:68px;height:68px;background:var(--gold);border-color:var(--gold);color:var(--btn-ink);box-shadow:0 6px 22px rgba(139,92,246,.3)}
   .cbtn:active{opacity:.8}
   .txt-row{display:flex;gap:10px;margin-top:12px}
   .txt-row .btn{flex:1;padding:11px;font-size:13.5px}
   .ann-line{text-align:center;color:var(--faint);font-size:12.5px;margin-top:8px}
   .ann-line b{color:var(--gold)}
+  .ann-tl{margin:12px auto 0;max-width:300px}
+  .ann-tl .atl{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;
+    color:var(--faint);font-size:13px;font-variant-numeric:tabular-nums}
+  .ann-tl .atl .ad{width:8px;height:8px;border-radius:50%;background:var(--line);flex:0 0 auto}
+  .ann-tl .atl b{font-weight:750;min-width:52px;color:var(--muted)}
+  .ann-tl .atl.next{background:var(--surface2);color:var(--ink);border:1px solid var(--rest)}
+  .ann-tl .atl.next .ad{background:var(--rest)}
+  .ann-tl .atl.next b{color:var(--rest)}
   .paused-band{background:var(--surface);border:1px solid var(--gold);color:var(--gold);
     border-radius:12px;padding:10px;text-align:center;font-weight:800;margin-top:12px;letter-spacing:.08em}
 
@@ -369,7 +382,8 @@
   .exolist{position:fixed;inset:0;z-index:135;background:rgba(5,8,11,.72);display:none}
   .exolist.show{display:block}
   .exolist-panel{position:absolute;left:0;right:0;bottom:0;max-height:84vh;overflow-y:auto;
-    background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);
+    background:rgba(20,22,32,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border-radius:20px 20px 0 0;border-top:1px solid var(--line);
     padding:12px var(--pad) calc(22px + env(safe-area-inset-bottom,0px))}
   .el-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
     padding:12px 8px;border-bottom:1px solid var(--line);border-radius:10px}
@@ -446,7 +460,7 @@
 
   .toast{
     position:fixed;left:50%;bottom:calc(var(--nav-h) + 14px);transform:translate(-50%,20px);
-    background:var(--ink);color:#12161A;font-weight:600;font-size:14px;
+    background:var(--gold);color:var(--btn-ink);font-weight:700;font-size:14px;
     padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:150;
   }
   .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -546,7 +560,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">Forge · Lot 8<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">Forge · Lot 9<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -600,11 +614,11 @@
    A = Aérobie / HIIT · M = Mobilité
 ============================================================ */
 var CATS = {
-  F:{label:"Renforcement", color:"var(--gold)",  hex:"#E9C46A"},
-  C:{label:"Cardio",       color:"var(--coral)", hex:"#F0796B"},
-  K:{label:"Calisthénie",  color:"var(--mint)",  hex:"#6BC7A4"},
-  A:{label:"Aérobie / HIIT",color:"var(--violet)",hex:"#B48CE8"},
-  M:{label:"Mobilité",     color:"var(--blue)",  hex:"#7FA9E8"}
+  F:{label:"Renforcement", color:"var(--gold)",  hex:"#A78BFA"},
+  C:{label:"Cardio",       color:"var(--rest)",  hex:"#FF8A3D"},
+  K:{label:"Calisthénie",  color:"var(--mint)",  hex:"#34D399"},
+  A:{label:"Aérobie / HIIT",color:"#F472B6",     hex:"#F472B6"},
+  M:{label:"Mobilité",     color:"var(--blue)",  hex:"#60A5FA"}
 };
 
 /* ============================================================
@@ -1188,7 +1202,7 @@ function wireCalendar(){
    Modèle : séance {id, nom, photo, couleur, jours:[{id, nom,
    exos:[{exoId, series, reps, charge, reposSerie, reposExo}]}]}
 ============================================================ */
-var SWATCHES = ["#E9C46A","#F0796B","#6BC7A4","#B48CE8","#7FA9E8"];
+var SWATCHES = ["#A78BFA","#FF8A3D","#6BC7A4","#F472B6","#60A5FA"];
 var UI = { view:"list", sessId:null, pickJour:null, pickCat:"", pickQ:"", cfg:null };
 window.UI = UI;
 
@@ -1813,6 +1827,9 @@ function repBeat(){
   }
   beep(760, 0.1);
   if(REPG.count === REPG.n) speak("Dernière");
+  var rb = $("#ring-big");
+  if(rb) rb.textContent = REPG.count;
+  setRing(REPG.count / REPG.n);
   var gl = $("#guide-line");
   if(gl) gl.textContent = "Rythme guidé : " + REPG.tempo + " s / répétition · " + REPG.count + " / " + REPG.n;
 }
@@ -2066,7 +2083,7 @@ function showWork(){
     '<span class="rchip">'+ex.series+' × '+esc(tgt.reps || "?")+'</span>' +
     (tgt.charge ? '<span class="rchip">'+esc(tgt.charge)+' kg</span>' : '') +
     '</div>' +
-    ring(repsDone / ex.series, CATS[x.c].hex, String(RUN.serie), false) +
+    ring(0, CATS[x.c].hex, repGuideOn() ? "0" : esc(String(tgt.reps||"—")), false) +
     '<p class="run-target" style="text-align:center">Objectif : '+esc(tgt.reps || "?")+' répétitions'+(tgt.charge ? ' à '+esc(tgt.charge)+' kg' : '')+'</p>' +
     '<p class="seg-next" id="guide-line" style="margin:2px 0 0"></p>' +
     '<div class="run-inputs">' +
@@ -2074,17 +2091,17 @@ function showWork(){
     '<div class="fld"><label>Charge (kg)</label><input id="run-charge" inputmode="decimal" value="'+esc(tgt.charge||"")+'"></div>' +
     '</div>' +
     '<div class="info-cards">' +
-    '<div class="icard"><label>Repos séries</label><b>'+fmtRepos(ex.reposSerie)+'</b></div>' +
-    '<div class="icard"><label>Repos après</label><b>'+fmtRepos(ex.reposExo)+'</b></div>' +
-    '<div class="icard"><label>Séance</label><b><span id="run-pct2">'+sessProgress()+'</span>%</b></div>' +
+    '<div class="icard"><label>Charge</label><b>'+(tgt.charge ? esc(tgt.charge)+' kg' : '—')+'</b></div>' +
+    '<div class="icard"><label>Tempo</label><b>'+repTempo(x, RUN.type)+' s/rép</b></div>' +
+    '<div class="icard"><label>Repos</label><b>'+fmtRepos(ex.reposSerie)+'</b></div>' +
     '</div>' +
     '<div class="run-actions" style="margin-top:12px">' +
-    '<button class="btn primary" data-runact="serie-ok">✓ Série '+RUN.serie+'/'+ex.series+' terminée</button>' +
+    '<button class="btn primary" data-runact="serie-ok">Terminer la série '+RUN.serie+'/'+ex.series+'</button>' +
     '<div class="txt-row">' +
     '<button class="btn ghost" data-runact="replace">⇄ Remplacer</button>' +
     '<button class="btn ghost" data-runact="skip-exo">Passer</button>' +
     '</div></div>' + ctrlRow();
-  var lbl = $("#ring-lbl"); if(lbl) lbl.textContent = "sur " + ex.series + " séries";
+  var lbl = $("#ring-lbl"); if(lbl) lbl.textContent = "répétitions";
   if(!RUN.paused) startRepGuide();
 }
 
@@ -2106,6 +2123,7 @@ function showTimeWork(){
     '<div class="seg-now" id="seg-now"></div>' +
     '<div class="seg-next" id="seg-next"></div>' +
     '<p class="ann-line" id="next-ann"></p>' +
+    '<div class="ann-tl" id="ann-tl"></div>' +
     '<div class="run-actions" style="margin-top:10px">' +
     '<div class="txt-row">' +
     '<button class="btn ghost" data-runact="replace">⇄ Remplacer</button>' +
@@ -2122,6 +2140,15 @@ function showTimeWork(){
     refreshHeader();
     var na = $("#next-ann"), d = nextAnnounceIn(rem, RUN.annPlan);
     if(na) na.innerHTML = d !== null ? 'Prochaine annonce dans <b>' + fmtClock(d) + '</b>' : "";
+    var tl = $("#ann-tl");
+    if(tl){
+      var marks = Object.keys(RUN.annPlan).map(Number).filter(function(k){ return k < rem; })
+        .sort(function(a,b){ return b - a; }).slice(0, 4);
+      tl.innerHTML = marks.map(function(k, i){
+        return '<div class="atl'+(i===0?" next":"")+'"><span class="ad"></span>' +
+          '<b>'+fmtClock(rem - k)+'</b><span>'+esc(RUN.annPlan[k])+'</span></div>';
+      }).join("");
+    }
     if(RUN.annPlan[rem]) speak(RUN.annPlan[rem]);
     var elapsed = total - rem;
     var si = bounds.findIndex(function(b){ return elapsed < b.end; });
@@ -2161,9 +2188,9 @@ function showRest(sec, nextLabel, after, kind, nextName){
   RUN.restTotal = sec;
   var restMarks = {60:1,30:1,15:1,10:1};
   $("#run-content").innerHTML = runTop() +
-    '<p class="run-phase" style="color:var(--blue)">Repos</p>' +
-    ring(1, "var(--gold)", '<span id="bt" class="big-timer warn" style="font-size:inherit">'+fmtClock(sec)+'</span>', true) +
-    '<p class="seg-next">'+esc(nextLabel)+'</p>' +
+    '<p class="run-phase" style="color:var(--rest)">Repos</p>' +
+    '<p class="run-target" style="text-align:center;margin-top:2px">'+esc(nextLabel)+'</p>' +
+    ring(1, "var(--rest)", '<span id="bt" style="color:var(--rest)">'+fmtClock(sec)+'</span>', true) +
     '<p class="ann-line" id="next-ann"></p>' +
     '<div class="run-actions">' +
     '<div class="run-row">' +
@@ -2173,12 +2200,14 @@ function showRest(sec, nextLabel, after, kind, nextName){
     '<button class="btn primary" data-runact="rest-skip">Passer le repos</button>' +
     '</div>' + ctrlRow();
   var rl = $("#ring-lbl"); if(rl) rl.textContent = "repos restant";
+  var pb = $("#run-content").querySelector('[data-runact="rest-skip"]');
+  if(pb) pb.textContent = "Passer le repos";
   startTimer(sec, function(rem){
     var el = $("#bt"); if(el) el.textContent = fmtClock(rem);
     setRing(rem / Math.max(RUN.restTotal, rem, 1));
     refreshHeader();
     var na = $("#next-ann"), d = nextAnnounceIn(rem, restMarks);
-    if(na) na.innerHTML = d !== null ? 'Prochaine annonce dans <b>' + fmtClock(d) + '</b>' : "";
+    if(na) na.innerHTML = d !== null ? 'Prochaine annonce dans <b style="color:var(--rest)">' + fmtClock(d) + '</b>' : "";
     if(voiceOn()) announceRemaining(rem);
     else if(rem >= 1 && rem <= 3) beep(600, 0.08);
   }, function(){
@@ -2536,10 +2565,14 @@ function renderHist(){
   var vol30 = h30.reduce(function(a,e){ return a + volumeOf(e); }, 0);
   var dur30 = h30.length ? Math.round(h30.reduce(function(a,e){ return a + e.dureeSec; },0) / h30.length / 60) : 0;
 
+  var ser30 = h30.reduce(function(a,e){
+    return a + e.exos.reduce(function(b,l){ return b + l.series.length; }, 0);
+  }, 0);
   var html = '<div class="kpis">' +
     '<div class="kpi"><label>Volume 30 j</label><b>'+(vol30 ? (vol30/1000).toFixed(1).replace(".",",")+" t" : "—")+'</b></div>' +
-    '<div class="kpi"><label>Séances 30 j</label><b>'+h30.length+'</b></div>' +
-    '<div class="kpi"><label>Durée moy.</label><b>'+(dur30 ? dur30+" min" : "—")+'</b></div>' +
+    '<div class="kpi"><label>Séances</label><b>'+h30.length+'</b></div>' +
+    '<div class="kpi"><label>Durée moy.</label><b>'+(dur30 ? dur30+"'" : "—")+'</b></div>' +
+    '<div class="kpi"><label>Séries</label><b>'+ser30+'</b></div>' +
     '</div>';
 
   /* Volume par séance (10 dernières) */
@@ -2547,7 +2580,42 @@ function renderHist(){
   html += '<div class="chart-card"><h4>Volume par séance (kg)</h4>' +
     svgBars(last.map(volumeOf),
       last.map(function(e){ return new Date(e.ts).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}); }),
-      340, 130, "#E9C46A") + '</div>';
+      340, 130, "#A78BFA") + '</div>';
+
+  /* Répartition musculaire (30 j) */
+  var groups = {};
+  h30.forEach(function(e){
+    e.exos.forEach(function(l){
+      var x = getExo(l.exoId);
+      if(!x) return;
+      var w = l.mode === "time" ? 1 : l.series.length;
+      groups[x.g] = (groups[x.g] || 0) + w;
+    });
+  });
+  var gkeys = Object.keys(groups).sort(function(a,b){ return groups[b]-groups[a]; });
+  if(gkeys.length){
+    var top = gkeys.slice(0,5), rest = gkeys.slice(5);
+    var data = top.map(function(g){ return [g, groups[g]]; });
+    if(rest.length) data.push(["Autres", rest.reduce(function(a,g){ return a+groups[g]; },0)]);
+    var totG = data.reduce(function(a,d){ return a+d[1]; },0);
+    var PAL = ["#A78BFA","#FF8A3D","#34D399","#F472B6","#60A5FA","#6F7787"];
+    var R = 46, CIRC = 2*Math.PI*R, off = 0;
+    var arcs = "", legend = "";
+    data.forEach(function(d, i){
+      var frac = d[1]/totG;
+      arcs += '<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+PAL[i]+'" stroke-width="17" ' +
+        'stroke-dasharray="'+(CIRC*frac-2).toFixed(1)+' '+(CIRC-(CIRC*frac-2)).toFixed(1)+'" ' +
+        'stroke-dashoffset="'+(-off).toFixed(1)+'" transform="rotate(-90 60 60)"/>';
+      off += CIRC*frac;
+      legend += '<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);padding:2px 0">' +
+        '<span style="width:9px;height:9px;border-radius:50%;background:'+PAL[i]+';flex:0 0 auto"></span>' +
+        '<span style="flex:1">'+esc(d[0])+'</span><b>'+Math.round(frac*100)+'%</b></div>';
+    });
+    html += '<div class="chart-card"><h4>Répartition musculaire (30 j)</h4>' +
+      '<div style="display:flex;align-items:center;gap:16px">' +
+      '<svg width="120" height="120" viewBox="0 0 120 120" style="flex:0 0 120px">'+arcs+'</svg>' +
+      '<div style="flex:1">'+legend+'</div></div></div>';
+  }
 
   /* Progression par exercice + projection */
   var perExo = {};
@@ -2583,7 +2651,7 @@ function renderHist(){
     }
     html += '<div class="chart-card"><h4>Progression par exercice (charge max, kg)</h4>' +
       '<select id="st-exo">'+opts+'</select>' +
-      svgLine(pts, projPts, 340, 140, "#7FA9E8") + projHtml + '</div>';
+      svgLine(pts, projPts, 340, 140, "#A78BFA") + projHtml + '</div>';
   }
 
   /* Historique détaillé */
@@ -2752,7 +2820,7 @@ function seedSplit3(){
     ["Résistance forte",120],["Récupération",60],["Retour au calme",120]]; /* 20 min */
 
   state.data.sessions.push({
-    id:uid(), nom:"Split 3 jours — Force & Cardio", photo:null, couleur:"#E9C46A",
+    id:uid(), nom:"Split 3 jours — Force & Cardio", photo:null, couleur:"#A78BFA",
     jours:[
       { id:uid(), nom:"Jour 1 · Pecs & Bras", exos:[
         T("Rameur", [["Échauffement",300]], 60),
