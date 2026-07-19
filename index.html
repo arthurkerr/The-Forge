@@ -560,7 +560,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">The Forge · Lot 9<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 10<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -797,7 +797,8 @@ var RAW = [
 ["Mobilité épaules au bâton","M","Épaules","","Bâton","Passer le bâton tendu au-dessus de la tête d'avant en arrière."],
 ["Étirement des mollets au mur","M","Mollets","","Mur","Pied arrière tendu, talon au sol, pousser le mur."],
 ["Étirement des fessiers allongé","M","Fessiers","","Tapis de sol","Sur le dos, cheville sur genou opposé, ramener la cuisse vers soi."],
-["Étirement des triceps","M","Triceps","Épaules","Aucun","Coude plié derrière la tête, tirer doucement avec l'autre main."]
+["Étirement des triceps","M","Triceps","Épaules","Aucun","Coude plié derrière la tête, tirer doucement avec l'autre main."],
+["Squats au poids du corps","F","Quadriceps","Fessiers","Poids du corps","Flexion complète des jambes sans charge, buste droit, talons au sol."]
 ];
 
 var DB = RAW.map(function(r,i){
@@ -1231,23 +1232,44 @@ function renderSeances(){
 }
 window.renderSeances = renderSeances;
 
+function specOf(s){
+  var m = s.nom.match(/^The Forge - ([^-]+) - /);
+  return m ? m[1].trim() : null;
+}
 function renderSessList(){
   var html = '<p class="eyebrow">Mes séances</p>' +
     '<button class="add-dash" data-act="add-sess">+ Nouvelle séance</button>';
   if(!state.data.sessions.length){
     html += '<div class="day-empty">Aucune séance pour l\'instant.' +
       '<span>Crée ta première séance, puis ajoute des jours et des exercices depuis la bibliothèque.</span></div>';
-  }else{
-    html += state.data.sessions.map(function(s){
-      var nEx = s.jours.reduce(function(a,j){ return a + j.exos.length; }, 0);
-      var thumb = s.photo
-        ? '<span class="sess-thumb"><img src="'+s.photo+'" alt=""></span>'
-        : '<span class="sess-thumb" style="border-top:3px solid '+esc(s.couleur)+'">'+dumbIcon(s.couleur)+'</span>';
-      return '<button class="sess-card" data-act="open-sess" data-id="'+s.id+'">' + thumb +
-        '<span class="st"><b>'+esc(s.nom)+'</b>' +
-        '<span>'+s.jours.length+' jour'+(s.jours.length>1?"s":"")+' · '+nEx+' exercice'+(nEx>1?"s":"")+'</span></span></button>';
-    }).join("");
+    $("#sess-root").innerHTML = html;
+    return;
   }
+  function card(s){
+    var nEx = s.jours.reduce(function(a,j){ return a + j.exos.length; }, 0);
+    var short = s.nom.replace(/^The Forge - [^-]+ - /, "");
+    var thumb = s.photo
+      ? '<span class="sess-thumb"><img src="'+s.photo+'" alt=""></span>'
+      : '<span class="sess-thumb" style="border-top:3px solid '+esc(s.couleur)+'">'+dumbIcon(s.couleur)+'</span>';
+    return '<button class="sess-card" data-act="open-sess" data-id="'+s.id+'">' + thumb +
+      '<span class="st"><b>'+esc(short)+'</b>' +
+      '<span>'+s.jours.length+' jour'+(s.jours.length>1?"s":"")+' · '+nEx+' exercice'+(nEx>1?"s":"")+'</span></span></button>';
+  }
+  var groups = {};
+  state.data.sessions.forEach(function(s){
+    var g = specOf(s) || "__perso";
+    (groups[g] = groups[g] || []).push(s);
+  });
+  var order = ["__perso","Musculation","Cardio","Calisthénie","Hyrox","Maison"];
+  Object.keys(groups).forEach(function(g){ if(order.indexOf(g) === -1) order.push(g); });
+  order.forEach(function(g){
+    if(!groups[g] || !groups[g].length) return;
+    if(g !== "__perso"){
+      var col = SPEC_COLORS[g] || "var(--gold)";
+      html += '<p class="eyebrow" style="color:'+col+'">The Forge · '+esc(g)+'</p>';
+    }
+    html += groups[g].map(card).join("");
+  });
   $("#sess-root").innerHTML = html;
 }
 
@@ -2820,7 +2842,7 @@ function seedSplit3(){
     ["Résistance forte",120],["Récupération",60],["Retour au calme",120]]; /* 20 min */
 
   state.data.sessions.push({
-    id:uid(), nom:"Split 3 jours — Force & Cardio", photo:null, couleur:"#A78BFA",
+    id:uid(), nom:"The Forge - Musculation - Split 3 jours", photo:null, couleur:"#A78BFA",
     jours:[
       { id:uid(), nom:"Jour 1 · Pecs & Bras", exos:[
         T("Rameur", [["Échauffement",300]], 60),
@@ -2860,11 +2882,270 @@ function seedSplit3(){
   saveState();
 }
 
+/* ============================================================
+   PACKS DE PROGRAMMES "THE FORGE" — semés une seule fois
+   Bases scientifiques : volume 10-20 séries/muscle/semaine
+   (Schoenfeld), progression linéaire lourde (5×5), intervalles
+   4×4 Helgerud, entraînement polarisé Zone 2, progressions
+   calisthéniques, format course Hyrox officiel.
+============================================================ */
+var SPEC_COLORS = {
+  "Musculation":"#A78BFA", "Cardio":"#FF8A3D", "Calisthénie":"#34D399",
+  "Hyrox":"#F472B6", "Maison":"#60A5FA"
+};
+function seedPacks(){
+  if(state.data.settings.seedPacksV1) return;
+  var ix = {};
+  DB.forEach(function(x){ ix[x.n] = x.id; });
+  var missing = [];
+  function R(name, series, reps, rs, opts){
+    opts = opts || {};
+    if(ix[name] === undefined){ missing.push(name); return null; }
+    return {exoId:ix[name], mode:"reps", series:series, reps:reps, charge:"",
+      reposSerie:rs, reposExo:(opts.re == null ? 120 : opts.re),
+      perSerie:opts.ps ? opts.ps.map(function(r){ return {reps:String(r), charge:""}; }) : null};
+  }
+  function T(name, segs, re){
+    if(ix[name] === undefined){ missing.push(name); return null; }
+    return {exoId:ix[name], mode:"time", series:1, reps:"", charge:"",
+      reposSerie:60, reposExo:(re == null ? 60 : re),
+      segments:segs.map(function(s){ return {label:s[0], duree:s[1]}; })};
+  }
+  function P(spec, nom, type, jours){
+    return {id:uid(), nom:"The Forge - "+spec+" - "+nom, photo:null,
+      couleur:SPEC_COLORS[spec], type:type,
+      jours:jours.map(function(j){
+        return {id:uid(), nom:j[0], exos:j[1].filter(function(e){ return e; })};
+      })};
+  }
+  var i44 = [["Échauffement progressif",600]];
+  for(var k=0;k<4;k++) i44.push(["Intervalle 90-95% FCmax",240],["Récupération active",180]);
+  i44.push(["Retour au calme",300]);
+
+  var packs = [
+  /* ---- MUSCULATION ---- */
+  P("Musculation","Full Body Express 30","hybride",[
+    ["Séance unique · ~30 min",[
+      R("Squat gobelet",3,"12",60),
+      R("Pompes",3,"12",60),
+      R("Rowing haltère unilatéral",3,"10 / bras",60),
+      R("Pont fessier",3,"15",45),
+      R("Développé épaules haltères",2,"12",60),
+      R("Planche",3,"45 s",45,{re:0})
+    ]]
+  ]),
+  P("Musculation","Force 5×5","force",[
+    ["Séance A (alterner A/B, 3×/sem)",[
+      R("Squat à la barre",5,"5",180),
+      R("Développé couché à la barre",5,"5",180),
+      R("Rowing barre buste penché",5,"5",180,{re:180})
+    ]],
+    ["Séance B",[
+      R("Squat à la barre",5,"5",180),
+      R("Développé militaire barre",5,"5",180),
+      R("Soulevé de terre",3,"5",180,{re:180})
+    ]]
+  ]),
+  P("Musculation","Push Pull Legs","hybride",[
+    ["Push · Poussée",[
+      R("Développé couché à la barre",4,"6-8",150),
+      R("Développé incliné haltères",3,"8-10",90),
+      R("Développé épaules haltères",3,"8-10",90),
+      R("Élévations latérales",3,"12-15",60),
+      R("Extensions à la poulie haute",3,"10-12",75),
+      R("Extensions à la corde",3,"12-15",60,{re:0})
+    ]],
+    ["Pull · Tirage",[
+      R("Tractions pronation",4,"6-10",120),
+      R("Rowing barre buste penché",4,"8-10",120),
+      R("Tirage horizontal à la poulie",3,"10-12",90),
+      R("Face pull",3,"15",60),
+      R("Curl à la barre",3,"10",75),
+      R("Curl marteau",3,"12",60,{re:0})
+    ]],
+    ["Legs · Jambes",[
+      R("Squat à la barre",4,"6-8",150),
+      R("Soulevé de terre roumain",3,"8-10",120),
+      R("Presse à cuisses",3,"10-12",90),
+      R("Leg curl allongé",3,"12",75),
+      R("Extensions mollets debout",4,"12-15",60),
+      R("Planche",3,"45 s",45,{re:0})
+    ]]
+  ]),
+  P("Musculation","Full Split 5 jours","hybride",[
+    ["J1 · Pectoraux",[
+      R("Développé couché à la barre",4,"8",120),
+      R("Développé incliné haltères",4,"10",90),
+      R("Écarté à la poulie vis-à-vis",3,"12",60),
+      R("Pec deck (butterfly)",3,"12",60),
+      R("Pompes",3,"max",60,{re:0})
+    ]],
+    ["J2 · Dos",[
+      R("Tractions pronation",4,"6-10",120),
+      R("Rowing barre buste penché",4,"8",120),
+      R("Tirage vertical à la poulie",3,"10",90),
+      R("Tirage horizontal à la poulie",3,"10",90),
+      R("Shrugs haltères",3,"12",60),
+      R("Extensions lombaires au banc",3,"12",60,{re:0})
+    ]],
+    ["J3 · Épaules & Abdos",[
+      R("Développé militaire barre",4,"8",120),
+      R("Élévations latérales",4,"12-15",60),
+      R("Oiseau (élévations buste penché)",3,"15",60),
+      R("Tirage menton",3,"10",75),
+      R("Relevé de jambes suspendu",3,"10-12",60),
+      R("Crunch à la poulie",3,"15",60,{re:0})
+    ]],
+    ["J4 · Bras",[
+      R("Curl à la barre",4,"10",75),
+      R("Barre au front",4,"10",75),
+      R("Curl incliné",3,"12",60),
+      R("Extensions à la corde",3,"12",60),
+      R("Curl marteau",3,"12",60),
+      R("Kickback",3,"15",45,{re:0})
+    ]],
+    ["J5 · Jambes",[
+      R("Squat à la barre",4,"6-8",150),
+      R("Presse à cuisses",4,"10",120),
+      R("Soulevé de terre roumain",3,"10",120),
+      R("Leg extension",3,"12",60),
+      R("Leg curl assis",3,"12",60),
+      R("Mollets à la presse",4,"15",60,{re:0})
+    ]]
+  ]),
+  /* ---- CARDIO ---- */
+  P("Cardio","4×4 Norvégien","endurance",[
+    ["VO2max · ~43 min",[ T("Course sur tapis", i44, 0) ]]
+  ]),
+  P("Cardio","Base Zone 2","endurance",[
+    ["J1 · Vélo 45 min",[
+      T("Vélo stationnaire",[["Mise en route",300],["Zone 2 (conversation possible)",2100],["Retour au calme",300]],0)
+    ]],
+    ["J2 · Rameur 33 min",[
+      T("Rameur",[["Mise en route",300],["Zone 2 régulière",1500],["Retour au calme",180]],0)
+    ]]
+  ]),
+  /* ---- CALISTHÉNIE ---- */
+  P("Calisthénie","Fondations","hybride",[
+    ["J1 · Tirage & Jambes",[
+      R("Tractions pronation",3,"5-8",120),
+      R("Rowing inversé (australian pull-up)",3,"8-12",90),
+      R("Fentes bulgares",3,"8 / jambe",90),
+      R("Pont fessier",3,"15",60),
+      R("Hollow hold",3,"20-30 s",60,{re:0})
+    ]],
+    ["J2 · Poussée & Gainage",[
+      R("Pompes",3,"8-12",90),
+      R("Dips entre bancs",3,"8-12",90),
+      R("Handstand (équilibre)",3,"30 s au mur",90),
+      R("Planche latérale",3,"30 s / côté",45),
+      R("Dead bug",3,"10",45,{re:0})
+    ]],
+    ["J3 · Complet & Skills",[
+      R("Tractions supination (chin-up)",3,"5-8",120),
+      R("Pompes diamant",3,"8-10",90),
+      R("L-sit",4,"10-15 s",75),
+      R("Relevé de genoux suspendu",3,"10",60),
+      R("Suspension à la barre (dead hang)",3,"30-45 s",75,{re:0})
+    ]]
+  ]),
+  P("Calisthénie","Street Avancé","force",[
+    ["J1 · Traction & Levers",[
+      R("Muscle-up",5,"2-4",180),
+      R("Tractions archer",4,"4-6 / bras",150),
+      R("Front lever",5,"5-10 s",120),
+      R("Dragon flag",3,"5-8",120),
+      R("Toes to bar",3,"8-10",90,{re:0})
+    ]],
+    ["J2 · Poussée & Équilibre",[
+      R("Handstand push-up",5,"3-6",180),
+      R("Dips aux anneaux",4,"6-10",150),
+      R("Pompes archer",4,"5-8 / bras",120),
+      R("Planche (statique)",5,"5-10 s",120),
+      R("Hollow hold",4,"30 s",60,{re:0})
+    ]]
+  ]),
+  /* ---- HYROX ---- */
+  P("Hyrox","Simulation Race","endurance",[
+    ["Race complète · format officiel",[
+      T("Course sur tapis",[["Run 1 · 1 km",300]],0),
+      T("Ski erg",[["Station 1 · 1000 m",240]],45),
+      T("Course sur tapis",[["Run 2 · 1 km",300]],0),
+      R("Poussée de traîneau (sled push)",1,"50 m (4×12,5 m)",60,{re:45}),
+      T("Course sur tapis",[["Run 3 · 1 km",300]],0),
+      R("Tirage de traîneau (sled pull)",1,"50 m",60,{re:45}),
+      T("Course sur tapis",[["Run 4 · 1 km",300]],0),
+      R("Burpees",1,"80 m en burpee broad jump",60,{re:45}),
+      T("Course sur tapis",[["Run 5 · 1 km",300]],0),
+      T("Rameur",[["Station 5 · 1000 m",240]],45),
+      T("Course sur tapis",[["Run 6 · 1 km",300]],0),
+      R("Farmer walk",1,"200 m (2 kettlebells)",60,{re:45}),
+      T("Course sur tapis",[["Run 7 · 1 km",300]],0),
+      R("Fentes marchées",1,"100 m sandbag",60,{re:45}),
+      T("Course sur tapis",[["Run 8 · 1 km",300]],0),
+      R("Wall balls",1,"75-100",60,{re:0})
+    ]]
+  ]),
+  P("Hyrox","Prépa Hybride","endurance",[
+    ["J1 · Force fonctionnelle",[
+      R("Kettlebell swing",4,"15",75),
+      R("Thruster",4,"10",90),
+      R("Fentes marchées",3,"20 pas",90),
+      R("Wall balls",4,"15",75),
+      R("Farmer walk",3,"40 m",90),
+      R("Poussée de traîneau (sled push)",4,"20 m",120,{re:0})
+    ]],
+    ["J2 · Moteur aérobie",[
+      T("Course sur tapis",[["Échauffement",300],["Zone 2",1500],["Retour au calme",180]],120),
+      T("Ski erg",[["Mise en route",180],
+        ["Effort soutenu",60],["Récup",60],["Effort soutenu",60],["Récup",60],
+        ["Effort soutenu",60],["Récup",60],["Effort soutenu",60],["Récup",60],
+        ["Effort soutenu",60],["Récup",60],["Effort soutenu",60],["Récup",60]],0)
+    ]],
+    ["J3 · Compromised running",[
+      T("Course sur tapis",[["800 m soutenu",240]],30),
+      R("Burpees",3,"15",30,{re:30}),
+      T("Course sur tapis",[["800 m soutenu",240]],30),
+      R("Wall balls",3,"15",30,{re:30}),
+      T("Course sur tapis",[["800 m soutenu",240]],30),
+      R("Kettlebell swing",3,"15",30,{re:0})
+    ]]
+  ]),
+  /* ---- MAISON ---- */
+  P("Maison","HIIT Express 30","endurance",[
+    ["Sans matériel · ~30 min",[
+      T("Jumping jacks",[["Activation",180]],30),
+      R("Squats au poids du corps",4,"20",30,{re:30}),
+      R("Burpees",4,"12",45,{re:30}),
+      T("Mountain climbers",[["Tabata 20/10 ×8",30],["Repos",10],["Effort",20],["Repos",10],
+        ["Effort",20],["Repos",10],["Effort",20],["Repos",10],["Effort",20],["Repos",10],
+        ["Effort",20],["Repos",10],["Effort",20],["Repos",10],["Effort",20],["Repos",10]],60),
+      R("Pompes",4,"10-15",45,{re:30}),
+      R("Planche",3,"45 s",30,{re:30}),
+      T("Posture de l'enfant",[["Retour au calme & respiration",120]],0)
+    ]]
+  ])
+  ];
+
+  if(missing.length){ return; } /* sécurité : un nom d'exercice introuvable annule le semis */
+  packs.forEach(function(p){ state.data.sessions.push(p); });
+  state.data.settings.seedPacksV1 = true;
+  saveState();
+}
+window.seedPacks = seedPacks;
+
+
 function init(){
   loadState();
   if(!state.data.planning) state.data.planning = [];
   if(!state.data.history) state.data.history = [];
   seedSplit3();
+  seedPacks();
+  state.data.sessions.forEach(function(s){
+    if(s.nom === "Split 3 jours — Force & Cardio"){
+      s.nom = "The Forge - Musculation - Split 3 jours"; s.couleur = "#A78BFA";
+    }
+  });
   state.data.sessions.forEach(function(s){
     s.jours.forEach(function(j){ j.exos.forEach(ensureExDefaults); });
   });
