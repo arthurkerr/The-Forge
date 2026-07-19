@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Forge — Carnet d'entraînement</title>
+<title>The Forge — Carnet d'entraînement</title>
 <style>
   :root{
     --bg:#0B0D12; --surface:rgba(255,255,255,.045); --surface2:rgba(255,255,255,.08);
@@ -474,8 +474,8 @@
 
 <header class="app-hdr">
   <div class="wordmark">
-    <h1>For<span>ge</span></h1>
-    <small>Carnet d'entraînement</small>
+    <h1>The <span>Forge</span></h1>
+    <small>Build · Push · Become</small>
   </div>
   <div class="bar-under"></div>
 </header>
@@ -560,7 +560,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">Forge · Lot 9<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 9<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -2008,7 +2008,7 @@ function audioKeepAlive(){
     KEEPA = a;
     if("mediaSession" in navigator){
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: "Forge — séance en cours", artist: RUN ? RUN.sessNom : "Forge" });
+        title: "The Forge — séance en cours", artist: RUN ? RUN.sessNom : "The Forge" });
       navigator.mediaSession.playbackState = "playing";
     }
     window.__keepalive = true;

@@ -1,8 +1,8 @@
 {
   "id": "forge-carnet",
-  "name": "Forge — Carnet d'entraînement",
-  "short_name": "Forge",
-  "description": "Planifie, exécute et suis tes séances de musculation et cardio, avec guidage audio complet.",
+  "name": "The Forge — Carnet d'entraînement",
+  "short_name": "The Forge",
+  "description": "Build · Push · Become — planifie, exécute et suis tes séances de musculation et cardio, avec guidage audio complet.",
   "lang": "fr",
   "start_url": "./index.html",
   "scope": "./",
