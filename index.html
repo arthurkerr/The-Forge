@@ -457,22 +457,22 @@
   .badges-head{padding:calc(10px + env(safe-area-inset-top,0px)) var(--pad) 6px}
   .badges-body{flex:1;overflow-y:auto;padding:4px var(--pad) 30px}
   .badges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
-  .bdg{background:var(--surface);border:1px solid var(--line);border-radius:14px;
-    padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
-  .bdg .bico{width:52px;height:52px}
-  .bdg b{font-size:11.5px;line-height:1.2;font-weight:700;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:27px}
-  .bdg .dots5{display:flex;gap:3px}
-  .bdg .dots5 i{width:6px;height:6px;border-radius:50%;background:var(--line)}
-  .bdg .dots5 i.on{background:var(--gold)}
-  .bdg .mini{width:100%;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden}
-  .bdg .mini i{display:block;height:100%;background:var(--gold)}
+  .bdg{background:none;border:none;padding:6px 2px;display:flex;flex-direction:column;
+    align-items:center;gap:6px;text-align:center}
+  .bdg b{font-size:12px;line-height:1.2;font-weight:750;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .bdg small{font-size:10.5px;color:var(--faint)}
+  .bdg .mini{width:78%;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden}
+  .bdg .mini i{display:block;height:100%;background:var(--rest)}
   .bdg.locked b{color:var(--faint)}
-  .bdg-lvl{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
-  .bdg-lvl .n{font-size:14px;flex:1}
-  .bdg-lvl .c{font-size:12.5px;color:var(--faint)}
-  .bdg-lvl.done .n{color:var(--ink)} .bdg-lvl.done .c{color:var(--mint)}
-  .bdg-lvl.next .n{color:var(--gold);font-weight:700}
+  .lvl-strip{display:flex;justify-content:center;gap:10px;margin:10px 0 4px}
+  .lvl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 10px;margin-top:16px}
+  .lvl-cell{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+  .lvl-cell b{font-size:13px;font-weight:750}
+  .lvl-cell small{font-size:11px;color:var(--faint)}
+  .lvl-cell small.ok{color:var(--mint)}
+  .lvl-cell .mini{width:70%;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden}
+  .lvl-cell .mini i{display:block;height:100%;background:var(--rest)}
   .glob-prog{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;margin-top:8px}
   .glob-prog i{display:block;height:100%;border-radius:4px;
     background:linear-gradient(90deg,#60A5FA,#A78BFA,#FF8A3D,#F5C542)}
@@ -664,7 +664,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">The Forge · Lot 11<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 12<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -703,6 +703,16 @@
 
 <nav class="nav" id="nav"></nav>
 <div class="toast" id="toast"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="mGold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFD66B"/><stop offset=".55" stop-color="#F2A82C"/><stop offset="1" stop-color="#D97E08"/>
+  </linearGradient>
+  <radialGradient id="mNight" cx=".5" cy=".38" r=".75">
+    <stop offset="0" stop-color="#6A55C9"/><stop offset=".6" stop-color="#3B2A78"/><stop offset="1" stop-color="#221647"/>
+  </radialGradient>
+  <filter id="mGray"><feColorMatrix type="saturate" values="0"/></filter>
+</defs></svg>
 
 <!-- Mode séance en cours -->
 <div class="runner" id="runner"><div id="run-content"></div></div>
@@ -3274,32 +3284,61 @@ function computeBadges(){
 }
 window.computeBadges = computeBadges;
 
-/* ---------- Badges : icônes SVG progressives ---------- */
-var TIER_COL = ["#454B57","#9AA3B2","#60A5FA","#A78BFA","#FF8A3D","#F5C542","#F5C542"];
-function badgeIcon(kind, tier, size){
-  var col = TIER_COL[Math.max(0, Math.min(6, tier))];
-  var glow = tier >= 4 ? 'filter="url(#bglow)"' : "";
-  var P = {
-    dumbbell:'<path d="M14 32h4m28 0h4M20 32h24M18 22v20M46 22v20M12 26v12M52 26v12"/>',
-    heart:'<path d="M32 50C18 40 12 32 12 24a10 10 0 0 1 20-2 10 10 0 0 1 20 2c0 8-6 16-20 26z"/>',
-    flame:'<path d="M32 10c4 8 14 12 14 24a14 14 0 0 1-28 0c0-6 3-9 6-13 1 4 3 6 5 7-1-7 0-13 3-18z"/>',
-    stack:'<path d="M16 44h32M20 36h24M24 28h16M28 20h8"/>',
-    star:'<path d="m32 10 6.5 13.5L53 26l-10.5 10 2.5 14.5L32 43.5 19 50.5 21.5 36 11 26l14.5-2.5z"/>',
-    run:'<path d="M36 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 54l8-14-6-8 10-8 6 8h10M28 26l-8 6"/>',
-    row:'<path d="M12 44h40M18 44l24-26M42 18l6 2-2 6M24 44v6h8"/>',
-    trophy:'<path d="M20 12h24v10a12 12 0 0 1-24 0zM20 16h-8a8 8 0 0 0 8 10M44 16h8a8 8 0 0 1-8 10M32 34v8m-8 8h16m-12 0v-8h8v8"/>',
-    clock:'<circle cx="32" cy="32" r="20"/><path d="M32 20v12l9 6"/>',
-    calendar:'<rect x="12" y="14" width="40" height="38" rx="5"/><path d="M12 26h40M22 8v10M42 8v10M22 36h6m6 0h8"/>',
-    medal:'<circle cx="32" cy="38" r="13"/><path d="m24 27-8-17h12l4 9 4-9h12l-8 17M32 33l2 4 4 .5-3 3 1 4.5-4-2.5-4 2.5 1-4.5-3-3 4-.5z"/>'
-  };
-  var particles = tier >= 5
-    ? '<circle cx="12" cy="14" r="2" fill="'+col+'"/><circle cx="52" cy="12" r="1.6" fill="'+col+'"/><circle cx="54" cy="46" r="2" fill="'+col+'"/><circle cx="10" cy="48" r="1.5" fill="'+col+'"/>'
-    : "";
-  return '<svg viewBox="0 0 64 64" class="bico" style="width:'+(size||52)+'px;height:'+(size||52)+'px">' +
-    '<defs><filter id="bglow" x="-40%" y="-40%" width="180%" height="180%">' +
-    '<feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="'+col+'" flood-opacity=".85"/></filter></defs>' +
-    '<g fill="none" stroke="'+col+'" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" '+glow+
-    (tier === 0 ? ' opacity=".45"' : '') + '>' + P[kind] + '</g>' + particles + '</svg>';
+/* ---------- Badges : médaillons (modèle strict) ---------- */
+var EMO = {
+  banc:["🐛","🐶","🏋️","🛡️","🤖","👑"],
+  squat:["🍮","🍗","🦵","🔩","🗿","🏆"],
+  sdt:["🦐","🖊️","⛏️","🏗️","🌍","🌋"],
+  ohp:["🍝","🛍️","💪","🏛️","🌤️","☀️"],
+  prog:["🎯","🔭","🏹","🎖️","🦅","🏆"],
+  charge:["🔩","⚙️","🪜","🛗","🚀","🪐"],
+  cardio:["😮‍💨","🚶","🚗","🎵","❤️‍🔥","☢️"],
+  run:["🐢","🚶","🏃","🛣️","🔥","👟"],
+  erg:["🛶","🚣","⛵","🚤","🌊","🚢"],
+  segments:["⏱️","⏲️","🕰️","⌛","🎼","⏳"],
+  flamme:["🕯️","🔥","🎇","🌋","☄️","🐉"],
+  total:["📅","🗓️","🏠","🛋️","🏛️","🏟️"],
+  weeks3:["✅","📆","🔁","⚙️","🕰️","🤖"],
+  early:["🥱","🌅","🐓","🌄","🌞","🦸"],
+  weekend:["🛌","☕","🏋️","⚔️","🤖","🏆"],
+  tonnage:["🧱","📦","🏗️","🏭","🦖","🚢"],
+  reps:["💯","🔢","🧮","🤯","🧠","♾️"],
+  series:["🔗","⛓️","🚜","🏭","⚡","🌀"],
+  bigday:["🌤️","💼","🥁","🚚","🌪️","🌋"],
+  marathon:["⚡","🕐","⌚","🌙","🔒"],
+  explorer:["🔍","🧭","🗺️","⛺","📚","🎓"],
+  multi:["🎯","🎲","🎪","🎡","🌈"],
+  happy:["🙂","😄","🤩","🥳","🧘"],
+  hyrox:["🏁","🎽","🏃","⏱️","🥇"],
+  guide:["🎧","🎵","⏱️","🎼","🕰️"],
+  collec:["🖼️","🗄️","🏆","🏛️","💎"]
+};
+/* Médaillon : anneau doré + disque violet nuit étoilé + icône centrale.
+   Verrouillé : gris, silhouette désaturée, barré d'une diagonale. */
+function badgeIcon(defOrId, tier, size){
+  var id = typeof defOrId === "string" ? defOrId : defOrId.id;
+  var emos = EMO[id] || ["🏅"];
+  var locked = !tier || tier < 1;
+  var emo = emos[Math.max(0, Math.min(emos.length - 1, (locked ? 1 : tier) - 1))];
+  size = size || 76;
+  var s = '<svg viewBox="0 0 100 100" class="bico" style="width:'+size+'px;height:'+size+'px">';
+  if(locked){
+    s += '<circle cx="50" cy="50" r="47" fill="#3A3F4A"/>' +
+      '<circle cx="50" cy="50" r="47" fill="none" stroke="#4A5058" stroke-width="6"/>' +
+      '<circle cx="50" cy="50" r="38" fill="#2E323B"/>' +
+      '<text x="50" y="50" font-size="42" text-anchor="middle" dominant-baseline="central" filter="url(#mGray)" opacity=".45">'+emo+'</text>' +
+      '<line x1="20" y1="82" x2="82" y2="20" stroke="#565D69" stroke-width="6" stroke-linecap="round"/>';
+  }else{
+    s += '<circle cx="50" cy="50" r="47" fill="url(#mGold)"/>' +
+      '<circle cx="50" cy="50" r="47" fill="none" stroke="#B96E08" stroke-width="2"/>' +
+      '<circle cx="50" cy="50" r="38" fill="url(#mNight)"/>' +
+      '<circle cx="33" cy="30" r="1.4" fill="#EDE7FF" opacity=".9"/>' +
+      '<circle cx="68" cy="26" r="1.1" fill="#EDE7FF" opacity=".7"/>' +
+      '<circle cx="72" cy="64" r="1.3" fill="#EDE7FF" opacity=".8"/>' +
+      '<circle cx="28" cy="66" r="1" fill="#EDE7FF" opacity=".6"/>' +
+      '<text x="50" y="51" font-size="44" text-anchor="middle" dominant-baseline="central">'+emo+'</text>';
+  }
+  return s + '</svg>';
 }
 
 /* ---------- Badges : collection ---------- */
@@ -3328,14 +3367,13 @@ function renderBadges(){
   });
   $("#badges-grid").innerHTML = list.length ? list.map(function(b){
     var name = b.lvl ? b.def.lv[b.lvl - 1] : b.def.nom;
-    var dots = b.def.thr.map(function(_, i){
-      return '<i class="'+(i < b.lvl ? "on" : "")+'"></i>';
-    }).join("");
+    var sub = b.next === null
+      ? '<small style="color:var(--mint)">Collection complète</small>'
+      : '<small>'+b.val+' / '+b.next+' '+esc(b.def.unit)+'</small>' +
+        '<span class="mini"><i style="width:'+Math.round(b.pct*100)+'%"></i></span>';
     return '<button class="bdg'+(b.lvl ? "" : " locked")+'" data-bdg="'+b.def.id+'">' +
-      badgeIcon(b.def.icon, b.lvl, 52) +
-      '<b>'+esc(name)+'</b>' +
-      '<span class="dots5">'+dots+'</span>' +
-      '<span class="mini"><i style="width:'+Math.round(b.pct*100)+'%"></i></span>' +
+      badgeIcon(b.def, b.lvl, 84) +
+      '<b>'+esc(name)+'</b>' + sub +
       '</button>';
   }).join("") : '<div class="empty" style="grid-column:1/-1"><b>Rien ici pour l\'instant</b>Continue à t\'entraîner !</div>';
 }
@@ -3343,20 +3381,31 @@ function openBadgeDetail(id){
   var bs = computeBadges();
   var b = bs.list.find(function(x){ return x.def.id === id; });
   if(!b) return;
-  var rows = b.def.thr.map(function(t, i){
-    var done = i < b.lvl, next = i === b.lvl;
-    return '<div class="bdg-lvl'+(done?" done":"")+(next?" next":"")+'">' +
-      '<span style="width:26px;flex:0 0 auto">'+badgeIcon(b.def.icon, i + 1, 24)+'</span>' +
-      '<span class="n">'+esc(b.def.lv[i])+'</span>' +
-      '<span class="c">'+(done ? "✓" : t + " " + b.def.unit)+'</span></div>';
+  /* Frise : petits médaillons des niveaux, le prochain entouré */
+  var strip = b.def.thr.map(function(t, i){
+    var un = i < b.lvl, cur = i === b.lvl;
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px'+
+      (cur ? ';outline:2px solid var(--rest);outline-offset:3px;border-radius:50%' : '')+'">' +
+      badgeIcon(b.def, un ? i + 1 : 0, 38) +
+      '<small style="font-size:10px;color:'+(un ? "var(--muted)" : "var(--faint)")+'">'+t+'</small></div>';
   }).join("");
+  /* Grille : un médaillon par niveau, nom + état dessous */
+  var cells = b.def.thr.map(function(t, i){
+    var un = i < b.lvl, next = i === b.lvl;
+    var st;
+    if(un) st = '<small class="ok">✓ Débloqué</small>';
+    else if(next) st = '<small>'+b.val+' / '+t+' '+esc(b.def.unit)+'</small>' +
+      '<span class="mini"><i style="width:'+Math.round(b.pct*100)+'%"></i></span>';
+    else st = '<small>'+t+' '+esc(b.def.unit)+'</small>';
+    return '<div class="lvl-cell">' + badgeIcon(b.def, un ? i + 1 : 0, 76) +
+      '<b>'+esc(b.def.lv[i])+'</b>' + st + '</div>';
+  }).reverse().join("");
   $("#sheet-content").innerHTML =
-    '<div style="text-align:center">'+badgeIcon(b.def.icon, b.lvl, 84)+'</div>' +
-    '<h2 style="text-align:center">'+esc(b.def.nom)+'</h2>' +
-    '<p class="desc" style="text-align:center">Progression actuelle : <b style="color:var(--gold)">'+b.val+' '+b.def.unit+'</b>' +
-    (b.next ? ' · prochain palier à '+b.next+' '+b.def.unit : ' · collection complète !')+'</p>' +
-    '<div class="glob-prog" style="margin:10px 0 14px"><i style="width:'+Math.round(b.pct*100)+'%"></i></div>' +
-    rows;
+    '<div style="text-align:center">' +
+    '<div style="font-size:34px;font-weight:800;line-height:1">'+b.val+' <span style="font-size:20px">'+esc(b.def.unit)+'</span></div>' +
+    '<div style="color:var(--faint);font-size:12px;margin-top:2px">'+esc(b.def.nom)+'</div></div>' +
+    '<div class="lvl-strip">'+strip+'</div>' +
+    '<div class="lvl-grid">'+cells+'</div>';
   $("#overlay").classList.add("show");
   $("#exo-sheet").classList.add("show");
 }
