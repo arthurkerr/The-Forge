@@ -151,6 +151,10 @@
   .cal-day.out{color:var(--faint);opacity:.4}
   .cal-day.today{border-color:var(--gold);color:var(--ink);font-weight:700}
   .cal-day.sel{background:var(--gold);color:var(--btn-ink);font-weight:800}
+  .cal-day .thumb{position:absolute;inset:3px;border-radius:9px;overflow:hidden;opacity:.5;z-index:-1}
+  .cal-day .thumb img{width:100%;height:100%;object-fit:cover}
+  .cal-day.hasphoto{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);font-weight:750}
+  .cal-day.sel .thumb{opacity:.28}
   .cal-day .dots{display:flex;gap:3px;position:absolute;bottom:5px}
   .cal-day .dots i{width:5px;height:5px;border-radius:50%;
     background:transparent;border:1.5px solid var(--gold)}
@@ -165,9 +169,10 @@
   }
   .day-empty span{display:block;color:var(--faint);font-size:12.5px;margin-top:5px}
   .plan-card{
-    display:flex;align-items:center;gap:12px;background:var(--surface);
-    border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;margin-bottom:8px;
+    display:flex;align-items:center;gap:11px;background:var(--surface);
+    border:1px solid var(--line);border-radius:var(--r);padding:9px 12px;margin-bottom:8px;
   }
+  .plan-card .sess-thumb{width:44px;height:44px;border-radius:10px}
   .plan-card .pdot{width:10px;height:10px;border-radius:50%;background:var(--gold);flex:0 0 auto}
   .plan-card b{font-size:15px}
   .plan-card span{display:block;font-size:12.5px;color:var(--faint)}
@@ -709,7 +714,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">The Forge · Lot 13<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 14<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -1261,6 +1266,22 @@ function histOn(dateStr){
     return (e.date || dstr(new Date(e.ts))) === dateStr;
   });
 }
+/* Retourne {photo, couleur} pour un plan (via sa séance) ou une entrée d'historique */
+function planVisual(p){
+  var s = p.sessionId ? getSess(p.sessionId) : null;
+  if(s) return { photo: s.photo || null, couleur: s.couleur || "var(--gold)" };
+  return { photo: null, couleur: "var(--gold)" };
+}
+function histVisual(e){
+  var s = e.sessionId ? getSess(e.sessionId) : null;
+  return { photo: (s && s.photo) || e.photo || null, couleur: e.couleur || (s && s.couleur) || "var(--mint)" };
+}
+/* Vignette réutilisable (photo ou pastille colorée avec icône) */
+function sessThumbHTML(photo, couleur){
+  return photo
+    ? '<span class="sess-thumb"><img src="'+photo+'" alt=""></span>'
+    : '<span class="sess-thumb" style="border-top:3px solid '+esc(couleur)+'">'+dumbIcon(couleur)+'</span>';
+}
 window.plansOn = plansOn;
 window.histOn = histOn;
 
@@ -1300,7 +1321,13 @@ function renderCalendar(){
       dots += "</span>";
     }
     if(hasDone) cls += " hasdone";
-    html += '<button class="'+cls+'" data-date="'+ds+'">'+d.getDate()+dots+'</button>';
+    /* Vignette de fond : première séance du jour ayant une photo (fait prioritaire sur planifié) */
+    var thumb = "";
+    var photoSrc = null;
+    for(var hp = 0; hp < dayHist.length && !photoSrc; hp++) photoSrc = histVisual(dayHist[hp]).photo;
+    for(var pp = 0; pp < dayPlans.length && !photoSrc; pp++) photoSrc = planVisual(dayPlans[pp]).photo;
+    if(photoSrc){ thumb = '<span class="thumb"><img src="'+photoSrc+'" alt=""></span>'; cls += " hasphoto"; }
+    html += '<button class="'+cls+'" data-date="'+ds+'">'+thumb+d.getDate()+dots+'</button>';
   }
   $("#cal-grid").innerHTML = html;
   renderDayPanel();
@@ -1330,8 +1357,9 @@ function renderDayPanel(){
     var sub;
     if(e.gps) sub = fmtDist(e.gps.dist) + " · " + Math.max(1,Math.round(e.dureeSec/60)) + " min";
     else sub = Math.max(1,Math.round(e.dureeSec/60)) + " min" + (vol ? " · " + vol.toLocaleString("fr-FR") + " kg" : "");
+    var hv = histVisual(e);
     html += '<div class="plan-card fait" data-hist-open="'+esc(e.id)+'">' +
-      '<span class="pdot" style="background:'+esc(e.couleur||"var(--mint)")+'"></span>' +
+      sessThumbHTML(hv.photo, hv.couleur) +
       '<div style="flex:1;min-width:0"><b>'+esc(e.sessNom)+(e.jourNom?" · "+esc(e.jourNom):"")+'</b>' +
       '<span>'+esc(sub)+'</span></div>' +
       '<span class="plan-badge done">Fait</span>' +
@@ -1350,8 +1378,9 @@ function renderDayPanel(){
       color = s.couleur;
       openable = ' data-open-sess="'+s.id+'"';
     }
+    var pv = { photo: s ? s.photo : null, couleur: color };
     html += '<div class="plan-card'+(p.fait?" fait":"")+'"'+openable+' data-plan="'+esc(p.id||"")+'">' +
-      '<span class="pdot" style="background:'+esc(color)+'"></span>' +
+      sessThumbHTML(pv.photo, pv.couleur) +
       '<div style="flex:1;min-width:0"><b>'+esc(nom)+'</b>' +
       (detail ? '<span>'+esc(detail)+'</span>' : '') + '</div>' +
       '<span class="plan-badge '+(p.fait?"done":"todo")+'">'+(p.fait?"Fait":"Prévu")+'</span>' +
