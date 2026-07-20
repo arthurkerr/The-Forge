@@ -151,9 +151,11 @@
   .cal-day.out{color:var(--faint);opacity:.4}
   .cal-day.today{border-color:var(--gold);color:var(--ink);font-weight:700}
   .cal-day.sel{background:var(--gold);color:var(--btn-ink);font-weight:800}
-  .cal-day .dots{display:flex;gap:3px;position:absolute;bottom:6px}
-  .cal-day .dots i{width:4px;height:4px;border-radius:50%;background:var(--gold)}
-  .cal-day .dots i.done{background:var(--mint)}
+  .cal-day .dots{display:flex;gap:3px;position:absolute;bottom:5px}
+  .cal-day .dots i{width:5px;height:5px;border-radius:50%;
+    background:transparent;border:1.5px solid var(--gold)}
+  .cal-day .dots i.done{background:var(--mint);border-color:var(--mint)}
+  .cal-day.hasdone{background:rgba(52,211,153,.08)}
   .cal-day.sel .dots i{background:var(--btn-ink)}
   .day-panel{margin-top:16px}
   .day-panel h3{font-size:15px;font-weight:750;margin-bottom:10px;text-transform:capitalize}
@@ -169,6 +171,11 @@
   .plan-card .pdot{width:10px;height:10px;border-radius:50%;background:var(--gold);flex:0 0 auto}
   .plan-card b{font-size:15px}
   .plan-card span{display:block;font-size:12.5px;color:var(--faint)}
+  .plan-card.fait{border-color:rgba(52,211,153,.4)}
+  .plan-badge{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 7px;border-radius:6px;flex:0 0 auto}
+  .plan-badge.done{background:rgba(52,211,153,.16);color:var(--mint)}
+  .plan-badge.todo{background:rgba(167,139,250,.16);color:var(--gold)}
 
   /* ---------- Séances : liste ---------- */
   .sess-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
@@ -415,6 +422,21 @@
   .proj-line b{color:var(--gold);font-size:17px}
   .sugg{margin-top:8px;font-size:13px;color:var(--faint);border-left:3px solid var(--gold);padding-left:10px}
 
+  /* ---------- Cardio extérieur GPS ---------- */
+  #gps-map{height:40vh;border-radius:var(--r);overflow:hidden;background:var(--surface);
+    border:1px solid var(--line);margin:10px 0;position:relative}
+  #gps-map .fallback{position:absolute;inset:0}
+  .gps-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .gps-stats .icard b{font-size:19px}
+  .gps-note{font-size:11.5px;color:var(--faint);text-align:center;margin-top:8px}
+  .leaflet-container{background:#1a1d24 !important}
+
+  /* points du calendrier : fait (plein, couleur séance) vs planifié (anneau) */
+  .cal-day .dots i.hist{width:5px;height:5px}
+  .cal-day .dots i.plan{background:none;border:1px solid var(--gold);width:5px;height:5px}
+  .day-sec{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--faint);margin:12px 0 6px}
+
   /* ---------- Suivi : historique simple ---------- */
   .hist-card{display:flex;align-items:center;gap:12px;background:var(--surface);
     border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;margin-bottom:10px}
@@ -476,6 +498,24 @@
   .glob-prog{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;margin-top:8px}
   .glob-prog i{display:block;height:100%;border-radius:4px;
     background:linear-gradient(90deg,#60A5FA,#A78BFA,#FF8A3D,#F5C542)}
+
+  /* ---------- GPS cardio extérieur ---------- */
+  .gps-map{width:100%;height:230px;border-radius:var(--r);overflow:hidden;
+    background:#12151C;border:1px solid var(--line);position:relative;margin-top:4px}
+  .gps-map svg{width:100%;height:100%;display:block}
+  .gps-badge{position:absolute;top:8px;left:8px;background:rgba(11,13,18,.72);
+    backdrop-filter:blur(6px);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;
+    display:flex;align-items:center;gap:6px}
+  .gps-badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--mint);
+    box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:gpspulse 1.6s infinite}
+  .gps-badge.wait .pulse{background:var(--rest);animation:none}
+  .gps-badge.paused .pulse{background:var(--faint);animation:none}
+  @keyframes gpspulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+  .gps-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .gps-stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+  .gps-stat label{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+  .gps-stat b{font-size:19px;font-variant-numeric:tabular-nums}
+  .gps-stat b small{font-size:11px;color:var(--faint);font-weight:600}
 
   /* ---------- États vides pages futures ---------- */
   .future{
@@ -548,7 +588,12 @@
       </button>
     </div>
   </div>
+  <button class="btn primary" id="gps-start" style="margin:2px 0 8px;display:flex;align-items:center;justify-content:center;gap:8px">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+    Démarrer un cardio extérieur (GPS)
+  </button>
   <div class="cal-grid" id="cal-grid"></div>
+  <button class="add-dash" id="gps-start-btn" style="margin-top:12px">🛰 Cardio extérieur (GPS)</button>
   <div class="day-panel">
     <h3 id="day-title"></h3>
     <div id="day-list"></div>
@@ -664,7 +709,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">The Forge · Lot 12<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 13<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -717,6 +762,9 @@
 <!-- Mode séance en cours -->
 <div class="runner" id="runner"><div id="run-content"></div></div>
 <div class="exolist" id="exolist"><div class="exolist-panel" id="exolist-panel"></div></div>
+
+<!-- Cardio extérieur GPS -->
+<div class="runner" id="gpsrun"><div id="gps-content"></div></div>
 
 <!-- Collection de badges -->
 <div class="badges-page" id="badges-page">
@@ -926,7 +974,8 @@ var RAW = [
 ["Étirement des mollets au mur","M","Mollets","","Mur","Pied arrière tendu, talon au sol, pousser le mur."],
 ["Étirement des fessiers allongé","M","Fessiers","","Tapis de sol","Sur le dos, cheville sur genou opposé, ramener la cuisse vers soi."],
 ["Étirement des triceps","M","Triceps","Épaules","Aucun","Coude plié derrière la tête, tirer doucement avec l'autre main."],
-["Squats au poids du corps","F","Quadriceps","Fessiers","Poids du corps","Flexion complète des jambes sans charge, buste droit, talons au sol."]
+["Squats au poids du corps","F","Quadriceps","Fessiers","Poids du corps","Flexion complète des jambes sans charge, buste droit, talons au sol."],
+["Course / marche en extérieur (GPS)","C","Cardio-vasculaire","Jambes","Aucun","Séance en plein air suivie par GPS : distance, allure et tracé du parcours."]
 ];
 
 var DB = RAW.map(function(r,i){
@@ -1207,7 +1256,13 @@ window.cal = cal;
 function plansOn(dateStr){
   return (state.data.planning || []).filter(function(p){ return p.date === dateStr; });
 }
+function histOn(dateStr){
+  return (state.data.history || []).filter(function(e){
+    return (e.date || dstr(new Date(e.ts))) === dateStr;
+  });
+}
 window.plansOn = plansOn;
+window.histOn = histOn;
 
 function renderCalendar(){
   var v = cal.view;
@@ -1230,13 +1285,21 @@ function renderCalendar(){
     if(ds === todayStr) cls += " today";
     if(ds === cal.sel) cls += " sel";
     var dayPlans = plansOn(ds);
-    var dots = "";
-    if(dayPlans.length){
+    var dayHist = histOn(ds);
+    var dots = "", hasDone = false;
+    var marks = [];
+    dayHist.forEach(function(e){ marks.push({done:true, color:e.couleur}); });
+    dayPlans.forEach(function(pl){ marks.push({done:!!pl.fait}); });
+    if(marks.length){
       dots = '<span class="dots">';
-      for(var k = 0; k < Math.min(dayPlans.length,3); k++)
-        dots += dayPlans[k].fait ? '<i class="done"></i>' : "<i></i>";
+      for(var k = 0; k < Math.min(marks.length,3); k++){
+        if(marks[k].done){ hasDone = true;
+          dots += '<i class="done"'+(marks[k].color?' style="background:'+esc(marks[k].color)+';border-color:'+esc(marks[k].color)+'"':'')+'></i>';
+        }else dots += "<i></i>";
+      }
       dots += "</span>";
     }
+    if(hasDone) cls += " hasdone";
     html += '<button class="'+cls+'" data-date="'+ds+'">'+d.getDate()+dots+'</button>';
   }
   $("#cal-grid").innerHTML = html;
@@ -1253,35 +1316,65 @@ function renderDayPanel(){
   $("#day-title").textContent = label;
 
   var plans = plansOn(cal.sel);
-  if(!plans.length){
+  var doneToday = histOn(cal.sel);
+  if(!plans.length && !doneToday.length){
     $("#day-list").innerHTML =
-      '<div class="day-empty">Aucune séance programmée ce jour.' +
-      '<span>Depuis l\'onglet Séances, ouvre une séance puis « Programmer sur l\'agenda ».</span></div>';
+      '<div class="day-empty">Aucune séance ce jour.' +
+      '<span>Programme une séance depuis l\'onglet Séances, ou lance un cardio extérieur.</span></div>';
     return;
   }
-  $("#day-list").innerHTML = plans.map(function(p){
+  var html = "";
+  /* Séances réalisées ce jour (historique) */
+  doneToday.forEach(function(e){
+    var vol = volumeOf(e);
+    var sub;
+    if(e.gps) sub = fmtDist(e.gps.dist) + " · " + Math.max(1,Math.round(e.dureeSec/60)) + " min";
+    else sub = Math.max(1,Math.round(e.dureeSec/60)) + " min" + (vol ? " · " + vol.toLocaleString("fr-FR") + " kg" : "");
+    html += '<div class="plan-card fait" data-hist-open="'+esc(e.id)+'">' +
+      '<span class="pdot" style="background:'+esc(e.couleur||"var(--mint)")+'"></span>' +
+      '<div style="flex:1;min-width:0"><b>'+esc(e.sessNom)+(e.jourNom?" · "+esc(e.jourNom):"")+'</b>' +
+      '<span>'+esc(sub)+'</span></div>' +
+      '<span class="plan-badge done">Fait</span>' +
+      (e.sessionId ? '<button class="ib" data-replay="'+esc(e.sessionId)+'" data-replay-jour="'+esc(e.jourId||"")+'" aria-label="Relancer" style="color:var(--gold)">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/></svg></button>' : '') +
+      '</div>';
+  });
+  /* Séances planifiées non encore faites */
+  plans.forEach(function(p){
     var nom = p.nom || "Séance", detail = p.detail || "", color = "var(--gold)", openable = "";
     var s = p.sessionId ? getSess(p.sessionId) : null;
     if(s){
       var j = s.jours.find(function(x){ return x.id === p.jourId; });
-      nom = s.nom + (j ? " · " + j.nom : "");
+      nom = s.nom.replace(/^The Forge - [^-]+ - /, "") + (j ? " · " + j.nom : "");
       detail = j ? (j.exos.length + " exercice" + (j.exos.length>1?"s":"")) : "";
       color = s.couleur;
       openable = ' data-open-sess="'+s.id+'"';
     }
-    return '<div class="plan-card"'+openable+' data-plan="'+esc(p.id||"")+'">' +
+    html += '<div class="plan-card'+(p.fait?" fait":"")+'"'+openable+' data-plan="'+esc(p.id||"")+'">' +
       '<span class="pdot" style="background:'+esc(color)+'"></span>' +
       '<div style="flex:1;min-width:0"><b>'+esc(nom)+'</b>' +
       (detail ? '<span>'+esc(detail)+'</span>' : '') + '</div>' +
-      (s ? '<button class="ib" data-run-sess="'+s.id+'" data-run-jour="'+esc(p.jourId||"")+'" data-run-plan="'+esc(p.id||"")+'" aria-label="Lancer la séance" style="color:var(--gold)">' +
+      '<span class="plan-badge '+(p.fait?"done":"todo")+'">'+(p.fait?"Fait":"Prévu")+'</span>' +
+      (s ? '<button class="ib" data-run-sess="'+s.id+'" data-run-jour="'+esc(p.jourId||"")+'" data-run-plan="'+esc(p.id||"")+'" aria-label="Lancer" style="color:var(--gold)">' +
         '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button>' : '') +
       '<button class="ib" data-plan-del="'+esc(p.id||"")+'" aria-label="Déprogrammer">✕</button>' +
       '</div>';
-  }).join("");
+  });
+  $("#day-list").innerHTML = html;
 }
 
 function wireDayPanel(){
   $("#day-list").addEventListener("click", function(ev){
+    var replay = ev.target.closest("[data-replay]");
+    if(replay){
+      startRun(replay.getAttribute("data-replay"), replay.getAttribute("data-replay-jour"), null);
+      return;
+    }
+    var histOpen = ev.target.closest("[data-hist-open]");
+    if(histOpen && !ev.target.closest("[data-replay]")){
+      openHistDetail(histOpen.getAttribute("data-hist-open"));
+      return;
+    }
     var run = ev.target.closest("[data-run-sess]");
     if(run){
       startRun(run.getAttribute("data-run-sess"), run.getAttribute("data-run-jour"), run.getAttribute("data-run-plan"));
@@ -2835,6 +2928,38 @@ window.renderHist = renderHist;
 function openHistDetail(id){
   var e = state.data.history.find(function(x){ return x.id === id; });
   if(!e) return;
+  if(e.gps){
+    var g = e.gps, mapSvg = "";
+    if(g.pts && g.pts.length > 1){
+      var lats = g.pts.map(function(p){ return p[0]; }), lons = g.pts.map(function(p){ return p[1]; });
+      var midLa = (Math.min.apply(null,lats)+Math.max.apply(null,lats))/2;
+      var mLat = 111320, mLon = 111320*Math.cos(midLa*Math.PI/180);
+      var minLo = Math.min.apply(null,lons), maxLo = Math.max.apply(null,lons);
+      var minLa = Math.min.apply(null,lats), maxLa = Math.max.apply(null,lats);
+      var sc = Math.min(84/Math.max((maxLo-minLo)*mLon,20), 44/Math.max((maxLa-minLa)*mLat,20));
+      var X = function(lon){ return 50+(lon-(minLo+maxLo)/2)*mLon*sc; };
+      var Y = function(lat){ return 30-(lat-midLa)*mLat*sc; };
+      var d = g.pts.map(function(p,i){ return (i?"L":"M")+X(p[1]).toFixed(1)+" "+Y(p[0]).toFixed(1); }).join(" ");
+      mapSvg = '<div class="gps-map" style="height:170px;margin-top:12px"><svg viewBox="0 0 100 60">' +
+        '<path d="'+d+'" fill="none" stroke="#34D399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<circle cx="'+X(g.pts[0][1]).toFixed(1)+'" cy="'+Y(g.pts[0][0]).toFixed(1)+'" r="2.6" fill="#60A5FA"/>' +
+        '<circle cx="'+X(g.pts[g.pts.length-1][1]).toFixed(1)+'" cy="'+Y(g.pts[g.pts.length-1][0]).toFixed(1)+'" r="2.6" fill="#F472B6"/></svg></div>';
+    }
+    $("#sheet-content").innerHTML =
+      '<div class="sheet-cat" style="color:var(--rest)">' +
+      new Date(e.ts).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}) + '</div>' +
+      '<h2>Cardio extérieur</h2>' + mapSvg +
+      '<div class="gps-stats" style="grid-template-columns:repeat(2,1fr);margin-top:12px">' +
+      '<div class="gps-stat"><label>Distance</label><b>'+fmtDist(g.dist)+'</b></div>' +
+      '<div class="gps-stat"><label>Durée</label><b>'+fmtClock(e.dureeSec)+'</b></div>' +
+      '<div class="gps-stat"><label>Allure moy.</label><b>'+fmtPace(g.pace)+'/km</b></div>' +
+      '<div class="gps-stat"><label>Calories</label><b>'+g.kcal+'</b></div></div>' +
+      (e.ressenti ? '<p class="desc" style="text-align:center;margin-top:12px;font-size:26px">'+FEEL_EMO[e.ressenti-1]+'</p>' : '') +
+      (e.note ? '<p class="desc">« '+esc(e.note)+' »</p>' : '');
+    $("#overlay").classList.add("show");
+    $("#exo-sheet").classList.add("show");
+    return;
+  }
   var rows = e.exos.map(function(l){
     var x = getExo(l.exoId);
     var det;
@@ -3425,6 +3550,241 @@ function wireBadges(){
 }
 
 /* ============================================================
+   GPS CARDIO EXTÉRIEUR
+============================================================ */
+var GPS = null;
+
+function haversine(a, b){
+  var R = 6371000, toR = Math.PI / 180;
+  var dLat = (b.lat - a.lat) * toR, dLon = (b.lon - a.lon) * toR;
+  var la1 = a.lat * toR, la2 = b.lat * toR;
+  var x = Math.sin(dLat/2)*Math.sin(dLat/2) +
+    Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(x)));
+}
+function fmtDist(m){
+  return m >= 1000 ? (m/1000).toFixed(2).replace(".",",") + " km" : Math.round(m) + " m";
+}
+function fmtPace(secPerKm){
+  if(!isFinite(secPerKm) || secPerKm <= 0 || secPerKm > 5400) return "—";
+  var m = Math.floor(secPerKm / 60), s = Math.round(secPerKm % 60);
+  return m + "'" + String(s).padStart(2,"0") + '"';
+}
+function gpsCalories(distM, weightKg){
+  var w = parseFloat(weightKg) || 72;
+  return Math.round(0.9 * w * (distM / 1000)); /* ~0.9 kcal/kg/km course */
+}
+
+function startGpsRun(){
+  if(!navigator.geolocation){ toast("GPS indisponible sur cet appareil"); return; }
+  GPS = { pts:[], dist:0, startTs:Date.now(), pausedMs:0, pauseStart:null,
+    paused:false, last:null, curSpeed:0, watchId:null, tick:null };
+  $("#runner").classList.add("show");
+  wakeAcquire(); audioKeepAlive(); fsEnter();
+  window.__gpsActive = true;
+  renderGps();
+  speak("Cardio extérieur démarré. Recherche du signal GPS.");
+  try{
+    GPS.watchId = navigator.geolocation.watchPosition(onGpsPos, onGpsErr,
+      { enableHighAccuracy:true, maximumAge:1000, timeout:15000 });
+  }catch(e){ onGpsErr(); }
+  GPS.tick = setInterval(function(){ if(GPS && !GPS.paused) updateGpsStats(); }, 1000);
+}
+window.startGpsRun = startGpsRun;
+window.__gpsInject = function(lat, lon, speed){ onGpsPos({coords:{latitude:lat,longitude:lon,accuracy:5,speed:speed==null?-1:speed}, timestamp:Date.now()}); };
+window.__gpsState = function(){ return GPS ? {dist:GPS.dist, pts:GPS.pts.length} : null; };
+
+function onGpsPos(pos){
+  if(!GPS || GPS.paused) return;
+  var p = { lat:pos.coords.latitude, lon:pos.coords.longitude,
+    acc:pos.coords.accuracy, t:Date.now() };
+  GPS.curSpeed = (pos.coords.speed != null && pos.coords.speed >= 0) ? pos.coords.speed : GPS.curSpeed;
+  if(GPS.last){
+    var d = haversine(GPS.last, p);
+    /* filtre le bruit GPS : ignore les sauts < 2 m ou aberrants */
+    if(d >= 2 && d < 60){
+      GPS.dist += d;
+      if(pos.coords.speed == null){
+        var dt = (p.t - GPS.last.t) / 1000;
+        if(dt > 0) GPS.curSpeed = d / dt;
+      }
+    }
+  }
+  GPS.last = p;
+  GPS.pts.push([p.lat, p.lon]);
+  window.__gpsPts = GPS.pts.length;
+  updateGpsStats();
+  drawTrack();
+}
+function onGpsErr(){
+  var badge = $("#gps-badge");
+  if(badge){ badge.className = "gps-badge wait"; badge.querySelector("span").textContent = "Signal GPS faible…"; }
+}
+function gpsElapsed(){
+  var now = GPS.paused ? GPS.pauseStart : Date.now();
+  return Math.floor((now - GPS.startTs - GPS.pausedMs) / 1000);
+}
+
+function renderGps(){
+  $("#run-content").innerHTML =
+    '<div class="run-top">' +
+    '<div class="rt-mid"><b>Cardio extérieur</b><div class="sub">Suivi GPS</div></div>' +
+    '<button class="ib" data-gps="stop" aria-label="Arrêter" style="color:var(--coral)">✕</button></div>' +
+    '<div class="gps-map"><span class="gps-badge wait" id="gps-badge"><span class="pulse"></span><span>Recherche GPS…</span></span>' +
+    '<svg id="gps-svg" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet"></svg></div>' +
+    '<div class="gps-stats">' +
+    '<div class="gps-stat"><label>Distance</label><b id="g-dist">0 m</b></div>' +
+    '<div class="gps-stat"><label>Durée</label><b id="g-time">0:00</b></div>' +
+    '<div class="gps-stat"><label>Allure moy.</label><b id="g-pace">—</b></div>' +
+    '<div class="gps-stat"><label>Vitesse</label><b id="g-speed">0<small> km/h</small></b></div>' +
+    '<div class="gps-stat"><label>Calories</label><b id="g-kcal">0</b></div>' +
+    '<div class="gps-stat"><label>Points</label><b id="g-pts">0</b></div>' +
+    '</div>' +
+    '<div class="run-actions" style="margin-top:14px">' +
+    '<button class="btn primary" data-gps="pause" id="gps-pause">⏸ Mettre en pause</button>' +
+    '<button class="btn danger" data-gps="stop">■ Terminer la séance</button>' +
+    '</div>';
+}
+function updateGpsStats(){
+  if(!GPS) return;
+  var el = gpsElapsed();
+  var set = function(id, v){ var e = $(id); if(e) e.innerHTML = v; };
+  set("#g-dist", fmtDist(GPS.dist));
+  set("#g-time", fmtClock(el));
+  set("#g-pace", fmtPace(GPS.dist > 20 ? el / (GPS.dist/1000) : 0));
+  set("#g-speed", (GPS.curSpeed * 3.6).toFixed(1).replace(".",",") + '<small> km/h</small>');
+  set("#g-kcal", gpsCalories(GPS.dist, profile().poids));
+  set("#g-pts", GPS.pts.length);
+  var badge = $("#gps-badge");
+  if(badge && GPS.pts.length && !GPS.paused){
+    badge.className = "gps-badge";
+    badge.querySelector("span:last-child").textContent = "GPS actif";
+  }
+}
+function drawTrack(){
+  var svg = $("#gps-svg");
+  if(!svg || GPS.pts.length < 1) return;
+  var lats = GPS.pts.map(function(p){ return p[0]; });
+  var lons = GPS.pts.map(function(p){ return p[1]; });
+  var minLa = Math.min.apply(null, lats), maxLa = Math.max.apply(null, lats);
+  var minLo = Math.min.apply(null, lons), maxLo = Math.max.apply(null, lons);
+  var midLa = (minLa + maxLa) / 2;
+  var mPerDegLat = 111320, mPerDegLon = 111320 * Math.cos(midLa * Math.PI/180);
+  var wM = Math.max((maxLo - minLo) * mPerDegLon, 20);
+  var hM = Math.max((maxLa - minLa) * mPerDegLat, 20);
+  var pad = 8, VW = 100, VH = 60;
+  var sc = Math.min((VW - pad*2) / wM, (VH - pad*2) / hM);
+  function X(lon){ return VW/2 + (lon - (minLo+maxLo)/2) * mPerDegLon * sc; }
+  function Y(lat){ return VH/2 - (lat - midLa) * mPerDegLat * sc; }
+  var d = GPS.pts.map(function(p, i){ return (i?"L":"M") + X(p[1]).toFixed(1) + " " + Y(p[0]).toFixed(1); }).join(" ");
+  var cur = GPS.pts[GPS.pts.length - 1];
+  var start = GPS.pts[0];
+  svg.innerHTML =
+    '<path d="'+d+'" fill="none" stroke="#34D399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="'+X(start[1]).toFixed(1)+'" cy="'+Y(start[0]).toFixed(1)+'" r="2.4" fill="#60A5FA"/>' +
+    '<circle cx="'+X(cur[1]).toFixed(1)+'" cy="'+Y(cur[0]).toFixed(1)+'" r="3.4" fill="#A78BFA" stroke="#fff" stroke-width="1.2"/>';
+}
+function pauseGps(){
+  GPS.paused = true; GPS.pauseStart = Date.now();
+  var b = $("#gps-pause"); if(b) b.textContent = "▶ Reprendre";
+  var badge = $("#gps-badge");
+  if(badge){ badge.className = "gps-badge paused"; badge.querySelector("span:last-child").textContent = "En pause"; }
+  speak("Pause");
+}
+function resumeGps(){
+  GPS.pausedMs += Date.now() - GPS.pauseStart;
+  GPS.paused = false; GPS.pauseStart = null; GPS.last = null;
+  var b = $("#gps-pause"); if(b) b.textContent = "⏸ Mettre en pause";
+  speak("Reprise");
+}
+function stopGps(){
+  if(!GPS) return;
+  var el = gpsElapsed(), dist = GPS.dist, pts = GPS.pts.slice();
+  if(GPS.watchId != null) navigator.geolocation.clearWatch(GPS.watchId);
+  clearInterval(GPS.tick);
+  var entry = { id:uid(), ts:Date.now(), date:dstr(new Date()),
+    sessNom:"Cardio extérieur", jourNom:"GPS", couleur:"#FF8A3D",
+    dureeSec:el, gps:{ dist:Math.round(dist), pts:pts,
+      pace: dist > 20 ? el/(dist/1000) : 0, kcal:gpsCalories(dist, profile().poids) },
+    exos:[], ressenti:0, note:"", interrompue:false };
+  wakeRelease(); audioKeepStop(); fsExit();
+  window.__gpsActive = false;
+  GPS = null;
+  showGpsSummary(entry);
+}
+function showGpsSummary(entry){
+  var g = entry.gps;
+  var mapSvg = "";
+  if(g.pts.length > 1){
+    var lats = g.pts.map(function(p){ return p[0]; }), lons = g.pts.map(function(p){ return p[1]; });
+    var midLa = (Math.min.apply(null,lats)+Math.max.apply(null,lats))/2;
+    var mLat = 111320, mLon = 111320*Math.cos(midLa*Math.PI/180);
+    var minLo = Math.min.apply(null,lons), maxLo = Math.max.apply(null,lons);
+    var minLa = Math.min.apply(null,lats), maxLa = Math.max.apply(null,lats);
+    var wM = Math.max((maxLo-minLo)*mLon,20), hM = Math.max((maxLa-minLa)*mLat,20);
+    var sc = Math.min(84/wM, 44/hM);
+    var X = function(lon){ return 50 + (lon-(minLo+maxLo)/2)*mLon*sc; };
+    var Y = function(lat){ return 30 - (lat-midLa)*mLat*sc; };
+    var d = g.pts.map(function(p,i){ return (i?"L":"M")+X(p[1]).toFixed(1)+" "+Y(p[0]).toFixed(1); }).join(" ");
+    mapSvg = '<div class="gps-map" style="height:180px"><svg viewBox="0 0 100 60">' +
+      '<path d="'+d+'" fill="none" stroke="#34D399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="'+X(g.pts[0][1]).toFixed(1)+'" cy="'+Y(g.pts[0][0]).toFixed(1)+'" r="2.6" fill="#60A5FA"/>' +
+      '<circle cx="'+X(g.pts[g.pts.length-1][1]).toFixed(1)+'" cy="'+Y(g.pts[g.pts.length-1][0]).toFixed(1)+'" r="2.6" fill="#F472B6"/>' +
+      '</svg></div>';
+  }
+  $("#run-content").innerHTML =
+    '<div class="run-top"><span class="rt">Rapport · cardio extérieur</span></div>' +
+    '<h2 style="color:var(--rest)">Belle sortie 🏃</h2>' + mapSvg +
+    '<div class="gps-stats" style="grid-template-columns:repeat(2,1fr);margin-top:12px">' +
+    '<div class="gps-stat"><label>Distance</label><b>'+fmtDist(g.dist)+'</b></div>' +
+    '<div class="gps-stat"><label>Durée</label><b>'+fmtClock(entry.dureeSec)+'</b></div>' +
+    '<div class="gps-stat"><label>Allure moy.</label><b>'+fmtPace(g.pace)+'/km</b></div>' +
+    '<div class="gps-stat"><label>Calories</label><b>'+g.kcal+'</b></div>' +
+    '</div>' +
+    '<div class="feels" style="margin-top:16px">' + FEEL_EMO.map(function(e,i){
+      return '<button class="feel" data-gfeel="'+(i+1)+'">'+e+'</button>';
+    }).join("") + '</div>' +
+    '<textarea class="note-inp" id="gps-note" placeholder="Note de sortie (optionnel)"></textarea>' +
+    '<div class="run-actions" style="margin-top:12px">' +
+    '<button class="btn primary" data-gps="save">Enregistrer la sortie</button>' +
+    '<button class="btn ghost" data-gps="discard">Abandonner</button>' +
+    '</div>';
+  RUN_GPS_ENTRY = entry;
+}
+var RUN_GPS_ENTRY = null;
+function wireGps(){
+  $("#runner").addEventListener("click", function(ev){
+    var gf = ev.target.closest("[data-gfeel]");
+    if(gf && RUN_GPS_ENTRY && !GPS){
+      RUN_GPS_ENTRY.ressenti = parseInt(gf.getAttribute("data-gfeel"),10);
+      $$("#run-content .feel").forEach(function(el){ el.classList.toggle("on", el===gf); });
+      return;
+    }
+    var b = ev.target.closest("[data-gps]");
+    if(!b) return;
+    var act = b.getAttribute("data-gps");
+    if(act === "pause"){ GPS.paused ? resumeGps() : pauseGps(); }
+    else if(act === "stop"){
+      if(GPS.pts.length && !confirm("Terminer la séance cardio ?")) return;
+      stopGps();
+    }
+    else if(act === "save"){
+      RUN_GPS_ENTRY.note = $("#gps-note") ? $("#gps-note").value : "";
+      state.data.history.unshift(RUN_GPS_ENTRY);
+      saveState(); renderCalendar(); renderHist();
+      toast("Sortie enregistrée : " + fmtDist(RUN_GPS_ENTRY.gps.dist));
+      RUN_GPS_ENTRY = null;
+      $("#runner").classList.remove("show");
+    }
+    else if(act === "discard"){
+      if(!confirm("Abandonner cette sortie sans l'enregistrer ?")) return;
+      RUN_GPS_ENTRY = null;
+      $("#runner").classList.remove("show");
+    }
+  });
+}
+
+/* ============================================================
    RÉGLAGES : export / import / reset
 ============================================================ */
 function exportData(){
@@ -3842,6 +4202,8 @@ function init(){
   setPage("agenda");
   wireCalendar();
   wireDayPanel();
+  wireGps();
+  $("#gps-start").addEventListener("click", startGpsRun);
   renderCalendar();
   buildFilters();
   renderLibrary();
