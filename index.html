@@ -379,6 +379,11 @@
   .txt-row .btn{flex:1;padding:11px;font-size:13.5px}
   .ann-line{text-align:center;color:var(--faint);font-size:12.5px;margin-top:8px}
   .ann-line b{color:var(--gold)}
+  .rythme-line{text-align:center;margin-top:10px;font-size:14px;color:var(--muted)}
+  .rythme-line b{color:var(--gold);font-size:22px;font-variant-numeric:tabular-nums;display:block;margin-top:2px}
+  .rythme-line small{display:block;color:var(--faint);font-size:12px;margin-top:2px}
+  .rtick{stroke:rgba(255,255,255,.28);stroke-width:2.5}
+  #ring-mark{fill:var(--gold);stroke:#0B0D12;stroke-width:2}
   .ann-tl{margin:12px auto 0;max-width:300px}
   .ann-tl .atl{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;
     color:var(--faint);font-size:13px;font-variant-numeric:tabular-nums}
@@ -742,7 +747,10 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">The Forge · Lot 15<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="eyebrow" style="margin-top:18px">Application</p>
+  <button class="btn ghost" id="btn-update" style="width:100%">🔄 Mettre à jour l'application</button>
+  <p class="desc" id="app-ver" style="text-align:center;margin-top:8px"></p>
+  <p class="about">The Forge · Lot 17<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -2527,8 +2535,8 @@ function showTimeWork(){
     '<h2>'+esc(x.n)+'</h2>' +
     ring(0, CATS[x.c].hex, '<span id="bt">'+fmtClock(total)+'</span>', true) +
     '<div class="seg-now" id="seg-now"></div>' +
-    '<div class="seg-next" id="seg-next"></div>' +
-    '<p class="ann-line" id="next-ann"></p>' +
+    '<p class="rythme-line" id="rythme-line"></p>' +
+    '<p class="ann-line" id="next-ann" style="margin-top:12px"></p>' +
     '<div class="ann-tl" id="ann-tl"></div>' +
     '<div class="run-actions" style="margin-top:10px">' +
     '<div class="txt-row">' +
@@ -2537,6 +2545,27 @@ function showTimeWork(){
     '</div></div>' + ctrlRow();
   var lbl = $("#ring-lbl"); if(lbl) lbl.textContent = "temps restant";
   var bounds = segBounds(ex);
+  /* repères visuels : un tick à chaque frontière de segment + marqueur du prochain changement */
+  var arc = $("#ring-arc");
+  if(arc && bounds.length > 1){
+    var svg = arc.ownerSVGElement, extra = "";
+    bounds.forEach(function(bd, bi){
+      if(bi === bounds.length - 1) return;
+      var a = (bd.end / total) * 2 * Math.PI - Math.PI / 2;
+      extra += '<line class="rtick" x1="'+(100+Math.cos(a)*71).toFixed(1)+'" y1="'+(100+Math.sin(a)*71).toFixed(1)+
+        '" x2="'+(100+Math.cos(a)*86).toFixed(1)+'" y2="'+(100+Math.sin(a)*86).toFixed(1)+'"/>';
+    });
+    var a0 = (bounds[0].end / total) * 2 * Math.PI - Math.PI / 2;
+    extra += '<circle id="ring-mark" r="5" cx="'+(100+Math.cos(a0)*78).toFixed(1)+'" cy="'+(100+Math.sin(a0)*78).toFixed(1)+'"/>';
+    svg.insertAdjacentHTML("beforeend", extra);
+  }
+  function moveRingMark(si2){
+    var mk = $("#ring-mark");
+    if(!mk || si2 >= bounds.length - 1){ if(mk) mk.remove(); return; }
+    var a2 = (bounds[si2].end / total) * 2 * Math.PI - Math.PI / 2;
+    mk.setAttribute("cx", (100+Math.cos(a2)*78).toFixed(1));
+    mk.setAttribute("cy", (100+Math.sin(a2)*78).toFixed(1));
+  }
   updateSegDisplay(bounds, 0);
   stopRepGuide();
   speak("C'est parti : " + bounds[0].label + ".");
@@ -2544,8 +2573,22 @@ function showTimeWork(){
     var el = $("#bt"); if(el) el.textContent = fmtClock(rem);
     setRing(1 - rem / total);
     refreshHeader();
+    /* PRIORITÉ : décompte avant le prochain changement de rythme (violet) */
+    var rl2 = $("#rythme-line");
+    if(rl2){
+      var curSi = bounds.findIndex(function(bb){ return (total - rem) < bb.end; });
+      if(curSi === -1) curSi = bounds.length - 1;
+      if(curSi < bounds.length - 1){
+        var leftSeg = bounds[curSi].end - (total - rem);
+        rl2.innerHTML = 'Changement de rythme dans<b>' + fmtClock(leftSeg) + '</b>' +
+          '<small>→ ' + esc(bounds[curSi+1].label) + '</small>';
+      }else{
+        rl2.innerHTML = '<small>Dernier segment — jusqu\'au bout !</small>';
+      }
+    }
+    /* secondaire : annonces (orange) */
     var na = $("#next-ann"), d = nextAnnounceIn(rem, RUN.annPlan);
-    if(na) na.innerHTML = d !== null ? 'Prochaine annonce dans <b>' + fmtClock(d) + '</b>' : "";
+    if(na) na.innerHTML = d !== null ? 'Prochaine annonce dans <b style="color:var(--rest)">' + fmtClock(d) + '</b>' : "";
     var tl = $("#ann-tl");
     if(tl){
       var marks = Object.keys(RUN.annPlan).map(Number).filter(function(k){ return k < rem; })
@@ -2564,6 +2607,7 @@ function showTimeWork(){
       beep(1150, 0.35); vib(250);
       speak(bounds[si].label);
       updateSegDisplay(bounds, si);
+      moveRingMark(si);
     }
     var leftInSeg = bounds[si].end - elapsed;
     if(rem > 5 && si < bounds.length - 1){
@@ -2700,6 +2744,7 @@ function buildHistEntry(interrompue){
     sessNom:RUN.sessNom, jourNom:RUN.jourNom, couleur:RUN.color,
     dureeSec:Math.round((Date.now() - RUN.startTs)/1000),
     exos:exos, ressenti:RUN.globalFeel||0, note:RUN.globalNote||"",
+    kcal:computeSessionKcal(exos, Math.round((Date.now() - RUN.startTs)/1000), RUN.type),
     interrompue:!!interrompue };
 }
 function volumeOf(entry){
@@ -2745,6 +2790,7 @@ function showSummary(entry){
     '<div class="sum-line"><span>Durée</span><b>'+fmtRepos(Math.max(1, Math.round(entry.dureeSec/60))*60).replace(" min"," min")+'</b></div>' +
     '<div class="sum-line"><span>Séries effectuées</span><b>'+nbSer+'</b></div>' +
     '<div class="sum-line"><span>Volume total</span><b>'+(vol ? vol.toLocaleString("fr-FR")+" kg" : "—")+'</b></div>' +
+    '<div class="sum-line"><span>Calories estimées</span><b>'+(entry.kcal ? "🔥 "+entry.kcal+" kcal" : "—")+'</b></div>' +
     '<div class="sum-line"><span>Ressenti global</span><b style="font-size:20px">'+(entry.ressenti ? FEEL_EMO[entry.ressenti-1] : "—")+'</b></div>' +
     '</div>' + rows +
     '<div class="run-actions"><button class="btn primary" data-runact="close">Fermer</button></div>';
@@ -3191,6 +3237,7 @@ function openHistDetail(id){
     '<div style="margin-top:10px">' +
     '<div class="sum-line"><span>Durée</span><b>'+Math.max(1,Math.round(e.dureeSec/60))+' min</b></div>' +
     '<div class="sum-line"><span>Volume</span><b>'+(vol ? vol.toLocaleString("fr-FR")+" kg" : "—")+'</b></div>' +
+    (e.kcal ? '<div class="sum-line"><span>Calories estimées</span><b>🔥 '+e.kcal+' kcal</b></div>' : '') +
     '<div class="sum-line"><span>Ressenti</span><b style="font-size:20px">'+(e.ressenti ? FEEL_EMO[e.ressenti-1] : "—")+'</b></div>' +
     '</div>' + rows +
     (e.note ? '<p class="desc" style="margin-top:10px">« '+esc(e.note)+' »</p>' : '');
@@ -3997,6 +4044,74 @@ function wireGps(){
 }
 
 /* ============================================================
+   CALORIES — approximation MET (Metabolic Equivalent of Task)
+   kcal = MET × poids (kg) × durée (heures)
+============================================================ */
+function metFor(x, sessType){
+  if(!x) return 4;
+  if(x.c === "C"){ /* cardio machines */
+    if(/marche/i.test(x.n)) return 3.5;
+    if(/sprint/i.test(x.n)) return 11;
+    if(/course|tapis/i.test(x.n)) return sessType === "endurance" ? 9 : 8;
+    if(/rameur|ski/i.test(x.n)) return 7;
+    if(/vélo|elliptique|air bike/i.test(x.n)) return 6.5;
+    if(/escalier|stepper/i.test(x.n)) return 8;
+    return 7;
+  }
+  if(x.c === "A") return 8;                      /* HIIT / aérobie intense */
+  if(x.c === "K") return 5;                      /* calisthénie */
+  if(x.c === "M") return 2.5;                    /* mobilité / étirements */
+  if(x.g === "Abdominaux") return 3.8;           /* gainage / abdos */
+  return sessType === "force" ? 6 : 5.5;         /* musculation (repos inclus) */
+}
+/* Estime les calories d'une séance : temps réel pour le chrono,
+   ~2 min 30 par série (effort + repos) pour les répétitions,
+   le tout plafonné à la durée réelle de la séance. */
+function computeSessionKcal(exos, dureeSec, sessType){
+  var w = parseFloat(profile().poids) || 72;
+  var parts = [], totalEst = 0;
+  exos.forEach(function(l){
+    var x = getExo(l.exoId);
+    var sec = l.mode === "time" ? (l.dureeSec || 0) : l.series.length * 150;
+    if(!sec) return;
+    parts.push({ met: metFor(x, sessType), sec: sec });
+    totalEst += sec;
+  });
+  if(!parts.length) return 0;
+  /* si l'estimation dépasse la durée réelle, réduire proportionnellement */
+  var scale = (dureeSec && totalEst > dureeSec) ? dureeSec / totalEst : 1;
+  var kcal = 0;
+  parts.forEach(function(p){ kcal += p.met * w * (p.sec * scale / 3600); });
+  return Math.round(kcal);
+}
+window.metFor = metFor;
+window.computeSessionKcal = computeSessionKcal;
+
+/* Mise à jour manuelle : purge le cache HTTP, désinscrit le service worker, recharge à neuf.
+   Les données (localStorage / IndexedDB) ne sont PAS touchées. */
+function forceUpdate(){
+  var btn = $("#btn-update");
+  if(btn){ btn.disabled = true; btn.textContent = "⏳ Mise à jour en cours…"; }
+  var work = [];
+  try{
+    if(window.caches && caches.keys)
+      work.push(caches.keys().then(function(keys){
+        return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+      }));
+  }catch(e){}
+  try{
+    if("serviceWorker" in navigator)
+      work.push(navigator.serviceWorker.getRegistrations().then(function(regs){
+        return Promise.all(regs.map(function(r){ return r.unregister(); }));
+      }));
+  }catch(e){}
+  Promise.all(work).catch(function(){}).then(function(){
+    location.replace(location.pathname + "?maj=" + Date.now());
+  });
+}
+window.forceUpdate = forceUpdate;
+
+/* ============================================================
    RÉGLAGES : export / import / reset
 ============================================================ */
 function exportData(){
@@ -4047,6 +4162,15 @@ function wireSettings(){
     state.data.settings.fullscreen = state.data.settings.fullscreen === false;
     saveState(); syncSwitches();
   });
+  var av = $("#app-ver");
+  if(av) av.textContent = "Version installée : " + APP_VERSION +
+    (location.protocol.indexOf("http") === 0 ? "" : " (mode local)");
+  if(state.data.settings.lastVersion !== APP_VERSION){
+    if(state.data.settings.lastVersion) toast("Mise à jour installée : version " + APP_VERSION);
+    state.data.settings.lastVersion = APP_VERSION;
+    saveState();
+  }
+  $("#btn-update").addEventListener("click", forceUpdate);
   $("#btn-export").addEventListener("click", exportData);
   $("#btn-import").addEventListener("click", function(){ $("#import-file").click(); });
   $("#import-file").addEventListener("change", function(){
@@ -4395,6 +4519,56 @@ function seedPacks(){
 }
 window.seedPacks = seedPacks;
 
+/* Complément : programmes abdos ajoutés après coup. Semé une seule fois via son propre flag,
+   pour que les utilisateurs ayant déjà les 11 packs reçoivent ces 2 nouveaux sans doublon. */
+function seedAbdo(){
+  if(state.data.settings.seedAbdoV1) return;
+  var ix = {};
+  DB.forEach(function(x){ ix[x.n] = x.id; });
+  var missing = [];
+  function R(name, series, reps, rs, opts){
+    opts = opts || {};
+    if(ix[name] === undefined){ missing.push(name); return null; }
+    return {exoId:ix[name], mode:"reps", series:series, reps:reps, charge:"",
+      reposSerie:rs, reposExo:(opts.re == null ? 120 : opts.re), perSerie:null, circuit:null};
+  }
+  function P(nom, jours){
+    return {id:uid(), nom:"The Forge - Musculation - "+nom, photo:null,
+      couleur:SPEC_COLORS["Musculation"], type:"hybride",
+      jours:jours.map(function(j){
+        return {id:uid(), nom:j[0], exos:j[1].filter(function(e){ return e; })};
+      })};
+  }
+  var packs = [
+    P("Full Abdo",[
+      ["Tronc complet · ~25 min",[
+        R("Relevé de jambes suspendu",3,"12",45),
+        R("Crunch à la poulie",3,"15",45),
+        R("Russian twist",3,"20 (10 / côté)",45),
+        R("Planche latérale",2,"40 s / côté",30),
+        R("Roulette abdominale (ab wheel)",3,"10",60),
+        R("Hollow hold",3,"30 s",45),
+        R("Planche",3,"45 s",30,{re:0})
+      ]]
+    ]),
+    P("Abdo Maison Express",[
+      ["Sans matériel · ~15 min",[
+        R("Crunch",3,"20",30),
+        R("Relevé de genoux suspendu",3,"15",30),
+        R("Mountain climbers",3,"40 (20 / jambe)",30),
+        R("Russian twist",3,"20 (10 / côté)",30),
+        R("Dead bug",3,"12 (6 / côté)",30),
+        R("Planche",3,"40 s",30,{re:0})
+      ]]
+    ])
+  ];
+  if(missing.length) return;
+  packs.forEach(function(p){ state.data.sessions.push(p); });
+  state.data.settings.seedAbdoV1 = true;
+  saveState();
+}
+window.seedAbdo = seedAbdo;
+
 
 function init(){
   loadState();
@@ -4402,6 +4576,7 @@ function init(){
   if(!state.data.history) state.data.history = [];
   seedSplit3();
   seedPacks();
+  seedAbdo();
   state.data.sessions.forEach(function(s){
     if(s.nom === "Split 3 jours — Force & Cardio"){
       s.nom = "The Forge - Musculation - Split 3 jours"; s.couleur = "#A78BFA";
@@ -4471,10 +4646,15 @@ function init(){
     if(c) openExo(parseInt(c.getAttribute("data-id"),10));
   });
 }
-/* Service worker (actif seulement si le fichier est hébergé en https) */
+var APP_VERSION = "17";
+window.APP_VERSION = APP_VERSION;
+/* Service worker (actif seulement si hébergé en https) — network-first, maj immédiates */
 try{
-  if(location.protocol.indexOf("http") === 0 && "serviceWorker" in navigator)
-    navigator.serviceWorker.register("./sw.js").catch(function(){});
+  if(location.protocol.indexOf("http") === 0 && "serviceWorker" in navigator){
+    navigator.serviceWorker.register("./sw.js").then(function(reg){
+      try{ reg.update(); }catch(e){}
+    }).catch(function(){});
+  }
 }catch(e){}
 
 if(document.readyState === "loading"){

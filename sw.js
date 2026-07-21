@@ -1,25 +1,42 @@
-/* Forge — service worker : rend l'app installable et 100% hors-ligne une fois hébergée */
-const CACHE = "forge-v1";
+/* The Forge — Service Worker v2
+   Stratégie : network-first pour l'application (mises à jour immédiates),
+   cache-first pour les icônes/manifest, bascule hors-ligne sur le cache. */
+const CACHE = "forge-v2";
+const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
+
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"])).catch(() => {}));
-  self.skipWaiting();
+  self.skipWaiting(); /* active la nouvelle version sans attendre */
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).catch(() => {}));
 });
+
 self.addEventListener("activate", (e) => {
-  e.waitUntil(self.clients.claim());
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    await self.clients.claim(); /* prend le contrôle des onglets ouverts */
+  })());
 });
+
 self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then((hit) => {
-      const net = fetch(e.request)
-        .then((res) => {
-          if (res && res.ok && e.request.method === "GET") {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, copy));
-          }
-          return res;
-        })
-        .catch(() => hit);
-      return hit || net;
-    })
-  );
+  const req = e.request;
+  const isApp = req.mode === "navigate" || req.url.includes("index.html");
+  if (isApp) {
+    /* network-first : toujours tenter le réseau, cache en secours (hors-ligne) */
+    e.respondWith(
+      fetch(req).then((res) => {
+        const cp = res.clone();
+        caches.open(CACHE).then((c) => c.put("./index.html", cp)).catch(() => {});
+        return res;
+      }).catch(() => caches.match("./index.html"))
+    );
+  } else {
+    /* assets : cache-first avec remplissage */
+    e.respondWith(
+      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
+        const cp = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, cp)).catch(() => {});
+        return res;
+      }))
+    );
+  }
 });
