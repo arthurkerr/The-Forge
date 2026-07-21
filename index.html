@@ -504,6 +504,34 @@
   .glob-prog i{display:block;height:100%;border-radius:4px;
     background:linear-gradient(90deg,#60A5FA,#A78BFA,#FF8A3D,#F5C542)}
 
+  /* ---------- Écran de repos enrichi ---------- */
+  .rest-next{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+    padding:13px;margin-top:14px}
+  .rest-next .rn-top{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .rest-next .rn-top .sess-thumb{width:42px;height:42px;border-radius:10px;flex:0 0 auto}
+  .rest-next .rn-lbl{flex:1;min-width:0}
+  .rest-next .rn-lbl small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--rest);margin-bottom:1px}
+  .rest-next .rn-lbl b{font-size:15.5px;line-height:1.15;display:block}
+  .rest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .rest-cell{background:var(--surface2);border-radius:11px;padding:9px 5px;text-align:center}
+  .rest-cell label{display:block;font-size:9.5px;font-weight:800;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+  .rest-cell b{font-size:16px;font-variant-numeric:tabular-nums}
+  .rest-cell b .ld{font-size:13px;font-weight:800;margin-left:2px}
+  .ld.up{color:var(--mint)} .ld.down{color:var(--rest)}
+
+  /* ---------- Circuits (exercices liés) ---------- */
+  .exo-row.linked{border-left:3px solid var(--rest)}
+  .circuit-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--rest);
+    background:rgba(255,138,61,.14);border-radius:5px;padding:1px 5px;margin-left:5px;vertical-align:middle}
+  .link-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+    padding:7px;color:var(--faint);font-size:11.5px;font-weight:650;
+    border:1px dashed var(--line);border-radius:9px;margin:-2px 0 6px}
+  .link-btn.on{color:var(--rest);border-color:rgba(255,138,61,.4);border-style:solid}
+  .link-btn:active{background:var(--surface2)}
+
   /* ---------- GPS cardio extérieur ---------- */
   .gps-map{width:100%;height:230px;border-radius:var(--r);overflow:hidden;
     background:#12151C;border:1px solid var(--line);position:relative;margin-top:4px}
@@ -714,7 +742,7 @@
       <button class="switch" id="sw-fs" aria-label="Plein écran en séance"></button>
     </div>
   </div>
-  <p class="about">The Forge · Lot 14<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 15<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -1548,11 +1576,20 @@ function renderSessEdit(){
           (ex.charge ? " · " + esc(ex.charge) + " kg" : "") +
           " · repos " + fmtRepos(ex.reposSerie);
       }
-      return '<button class="exo-row" data-act="cfg" data-jour="'+j.id+'" data-idx="'+idx+'">' +
+      var linkedPrev = idx > 0 && ex.circuit && j.exos[idx-1].circuit === ex.circuit;
+      var linkedNext = idx < j.exos.length-1 && ex.circuit && j.exos[idx+1].circuit === ex.circuit;
+      var tag = (linkedPrev || linkedNext) ? '<span class="circuit-tag">⇄ circuit</span>' : "";
+      var row = '<button class="exo-row'+(linkedPrev?" linked":"")+'" data-act="cfg" data-jour="'+j.id+'" data-idx="'+idx+'">' +
         '<span class="rrail" style="background:'+CATS[x.c].hex+'"></span>' +
-        '<span class="xt"><b>'+esc(x.n)+'</b><small>'+meta+'</small></span>' +
+        '<span class="xt"><b>'+esc(x.n)+tag+'</b><small>'+meta+'</small></span>' +
         '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 6 6 6-6 6"/></svg>' +
         '</button>';
+      if(idx < j.exos.length-1){
+        var isLinked = ex.circuit && j.exos[idx+1].circuit === ex.circuit;
+        row += '<button class="link-btn'+(isLinked?" on":"")+'" data-act="link" data-jour="'+j.id+'" data-idx="'+idx+'">' +
+          (isLinked ? '⇄ Lié en circuit — dissocier' : '＋ Lier au suivant (circuit)') + '</button>';
+      }
+      return row;
     }).join("");
     return '<div class="jour-card">' +
       '<div class="jour-head">' +
@@ -1641,6 +1678,21 @@ function wireSeances(){
     else if(act === "add-exo") openPicker(b.getAttribute("data-jour"));
     else if(act === "run-jour") startRun(UI.sessId, b.getAttribute("data-jour"), null);
     else if(act === "cfg") openCfg(b.getAttribute("data-jour"), parseInt(b.getAttribute("data-idx"),10));
+    else if(act === "link"){
+      var jL = s.jours.find(function(x){ return x.id === b.getAttribute("data-jour"); });
+      var iL = parseInt(b.getAttribute("data-idx"),10);
+      var a = jL.exos[iL], nx = jL.exos[iL+1];
+      if(a.circuit && nx.circuit && a.circuit === nx.circuit){
+        /* dissocier : couper le lien entre a et nx ; les suivants forment un nouveau groupe */
+        var cid = a.circuit, newId = uid();
+        for(var k = iL+1; k < jL.exos.length && jL.exos[k].circuit === cid; k++) jL.exos[k].circuit = newId;
+        cleanupCircuits(jL);
+      }else{
+        var gid = a.circuit || nx.circuit || uid();
+        a.circuit = gid; nx.circuit = gid;
+      }
+      saveState(); renderSessEdit();
+    }
     else if(act === "prog") openPlan();
     else if(act === "share") openShare();
     else if(act === "dup"){
@@ -1805,9 +1857,17 @@ function cfgTarget(){
 function ensureExDefaults(ex){
   if(!ex.mode) ex.mode = "reps";
   if(ex.perSerie === undefined) ex.perSerie = null;
+  if(ex.circuit === undefined) ex.circuit = null;
   if(ex.mode === "time" && (!ex.segments || !ex.segments.length))
     ex.segments = [{label:"Effort", duree:ex.duree || 600}];
 }
+/* Un circuit doit garder >=2 membres consécutifs, sinon on retire la marque */
+function cleanupCircuits(j){
+  var counts = {};
+  j.exos.forEach(function(e){ if(e.circuit) counts[e.circuit] = (counts[e.circuit]||0)+1; });
+  j.exos.forEach(function(e){ if(e.circuit && counts[e.circuit] < 2) e.circuit = null; });
+}
+window.cleanupCircuits = cleanupCircuits;
 function segTotal(ex){
   return (ex.segments||[]).reduce(function(a,s){ return a + s.duree; }, 0);
 }
@@ -2085,7 +2145,7 @@ function startRepGuide(){
   REPG = { count:0, n:n, tempo:tempo, iv:null, to:null };
   var gl = $("#guide-line");
   if(gl) gl.textContent = "Rythme guidé : " + tempo + " s / répétition · 0 / " + n;
-  speak("Série " + RUN.serie + ". " + n + " répétitions.");
+  speak(n + " répétitions à faire");
   REPG.to = setTimeout(function(){
     repBeat();
     REPG.iv = setInterval(repBeat, tempo * 1000);
@@ -2101,7 +2161,13 @@ function repBeat(){
     return;
   }
   beep(760, 0.1);
-  if(REPG.count === REPG.n) speak("Dernière");
+  /* Annonces intermédiaires progressives des répétitions restantes */
+  var remaining = REPG.n - REPG.count;
+  if(REPG.count === REPG.n) speak("Dernière répétition");
+  else if(remaining === 1) speak("Encore 2");
+  else if(remaining === 2) speak("Encore 3");
+  else if(remaining === 4 && REPG.n >= 7) speak("5 répétitions");
+  else if(remaining === 9 && REPG.n >= 14) speak("10 répétitions");
   var rb = $("#ring-big");
   if(rb) rb.textContent = REPG.count;
   setRing(REPG.count / REPG.n);
@@ -2191,6 +2257,7 @@ function startRun(sessId, jourId, planId){
   showWork();
 }
 window.startRun = startRun;
+Object.defineProperty(window, "RUN", { get: function(){ return RUN; } });
 
 function curEx(){ return RUN.exos[RUN.idx]; }
 function exLog(){
@@ -2200,6 +2267,61 @@ function exLog(){
   return RUN.log[RUN.idx];
 }
 window.exLog = exLog;
+
+/* ============ CIRCUITS : exercices liés en cycle alterné ============
+   Membres = exercices consécutifs partageant le même ex.circuit.
+   Déroulé : série N de chaque membre encore actif dans l'ordre, puis N+1.
+   Un membre qui a atteint son nombre de séries est sauté ; les autres continuent. */
+function circuitMembers(idx){
+  var ex = RUN.exos[idx];
+  if(!ex || !ex.circuit) return [idx];
+  var m = [];
+  RUN.exos.forEach(function(e, i){ if(e.circuit === ex.circuit) m.push(i); });
+  return m;
+}
+function seriesDoneAt(i){ return RUN.log[i] ? RUN.log[i].series.length : 0; }
+/* Après avoir loggé une série sur RUN.idx, renvoie le prochain {idx, serie} ou null si circuit fini */
+function nextCircuitStep(){
+  var members = circuitMembers(RUN.idx);
+  if(members.length < 2) return null;
+  var pos = members.indexOf(RUN.idx);
+  var justDone = seriesDoneAt(RUN.idx); /* nb de séries faites sur l'exo courant (après push) */
+  /* même tour : prochain membre à droite qui a fait moins de séries que l'exo courant et pas fini */
+  for(var k = pos + 1; k < members.length; k++){
+    var mi = members[k];
+    if(seriesDoneAt(mi) < justDone && seriesDoneAt(mi) < RUN.exos[mi].series)
+      return { idx: mi, serie: seriesDoneAt(mi) + 1 };
+  }
+  /* tour suivant : premier membre encore actif (depuis le début du circuit) */
+  for(var k2 = 0; k2 < members.length; k2++){
+    var mi2 = members[k2];
+    if(seriesDoneAt(mi2) < RUN.exos[mi2].series)
+      return { idx: mi2, serie: seriesDoneAt(mi2) + 1 };
+  }
+  return null;
+}
+function inCircuit(idx){ return circuitMembers(idx).length >= 2; }
+window.nextCircuitStep = nextCircuitStep;
+window.circuitMembers = circuitMembers;
+
+/* Construit l'objet d'info pour l'écran de repos (prochain effort) */
+function buildRestInfo(idx, serie){
+  var ex = RUN.exos[idx];
+  var x = getExo(ex.exoId);
+  if(!x) return null;
+  if(ex.mode === "time"){
+    return { name:x.n, cat:x.c, mode:"time", dur:segTotal(ex),
+      serieLabel: inCircuit(idx) ? circuitPos(idx) : "1/1" };
+  }
+  var tgt = ex.perSerie ? ex.perSerie[serie-1] : {reps:ex.reps, charge:ex.charge};
+  return { name:x.n, cat:x.c, mode:"reps", exoId:ex.exoId,
+    serieNum:serie, totalSeries:ex.series,
+    reps:(tgt && tgt.reps) || ex.reps, charge:(tgt && tgt.charge) || ex.charge };
+}
+function circuitPos(idx){
+  var m = circuitMembers(idx);
+  return (m.indexOf(idx)+1) + "/" + m.length;
+}
 
 /* --- Progression globale de la séance --- */
 function sessProgress(){
@@ -2273,18 +2395,16 @@ function ctrlRow(){
 
 /* --- Audio maintenu en arrière-plan (session média) --- */
 var KEEPA = null;
+/* La musique de l'utilisateur était trop atténuée : une boucle audio CONTINUE occupait
+   le canal média en permanence, forçant Android à "ducker" la musique tout le long.
+   Nouveau comportement : aucun flux permanent. On ne déclenche du son que ponctuellement
+   (bips + annonces vocales), et le canal est relâché juste après -> la musique revient
+   immédiatement à son volume normal. On conserve la session média pour l'affichage. */
 function audioKeepAlive(){
   try{
-    if(KEEPA) return;
-    var a = document.createElement("audio");
-    a.loop = true; a.volume = 0.02;
-    a.src = "data:audio/wav;base64,UklGRvQHAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdAHAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
-    a.play().catch(function(){});
-    KEEPA = a;
     if("mediaSession" in navigator){
       navigator.mediaSession.metadata = new MediaMetadata({
         title: "The Forge — séance en cours", artist: RUN ? RUN.sessNom : "The Forge" });
-      navigator.mediaSession.playbackState = "playing";
     }
     window.__keepalive = true;
   }catch(e){}
@@ -2348,6 +2468,11 @@ function showWork(){
   var ex = curEx(); ensureExDefaults(ex);
   if(ex.mode === "time"){ showTimeWork(); return; }
   var x = getExo(ex.exoId);
+  if(!x){ /* exercice introuvable (séance corrompue/importée) : passer au suivant sans planter */
+    if(RUN.idx < RUN.exos.length - 1){ RUN.idx++; RUN.serie = 1; showWork(); }
+    else showGlobalFeel();
+    return;
+  }
   var tgt = ex.perSerie ? ex.perSerie[RUN.serie-1] : {reps:ex.reps, charge:ex.charge};
   var repsDone = (RUN.log[RUN.idx] ? RUN.log[RUN.idx].series.length : 0);
   var sugg = null;
@@ -2461,7 +2586,43 @@ function updateSegDisplay(bounds, si){
 }
 
 /* --- Repos --- */
-function showRest(sec, nextLabel, after, kind, nextName){
+function loadIndicator(exoId, charge){
+  /* compare la charge à venir à la dernière charge réalisée sur cet exercice dans la séance */
+  if(!charge) return "";
+  var prev = null;
+  for(var i = RUN.exos.length - 1; i >= 0; i--){
+    var l = RUN.log[i];
+    if(l && RUN.exos[i].exoId === exoId && l.series.length){
+      var last = l.series[l.series.length - 1].charge;
+      if(last){ prev = parseFloat(last); break; }
+    }
+  }
+  var c = parseFloat(charge);
+  if(prev === null || isNaN(c)) return "";
+  if(c > prev) return ' <span class="ld up">▲</span>';
+  if(c < prev) return ' <span class="ld down">▼</span>';
+  return "";
+}
+function restInfoCard(info){
+  if(!info) return "";
+  var thumb = sessThumbHTML(null, CATS[info.cat] ? CATS[info.cat].hex : "var(--rest)");
+  var cells = "";
+  if(info.mode === "time"){
+    cells = '<div class="rest-cell"><label>Durée</label><b>'+fmtRepos(info.dur||0)+'</b></div>' +
+      '<div class="rest-cell"><label>Type</label><b style="font-size:13px">Chrono</b></div>' +
+      '<div class="rest-cell"><label>Série</label><b>'+info.serieLabel+'</b></div>';
+  }else{
+    var seriesLeft = info.totalSeries - info.serieNum + 1;
+    var loadInd = loadIndicator(info.exoId, info.charge);
+    cells = '<div class="rest-cell"><label>Série</label><b>'+info.serieNum+'/'+info.totalSeries+'</b></div>' +
+      '<div class="rest-cell"><label>Répétitions</label><b>'+esc(info.reps||"?")+'</b></div>' +
+      '<div class="rest-cell"><label>Charge</label><b>'+(info.charge?esc(info.charge)+' kg'+loadInd:'—')+'</b></div>';
+  }
+  return '<div class="rest-next"><div class="rn-top">'+thumb+
+    '<div class="rn-lbl"><small>Prochain exercice</small><b>'+esc(info.name)+'</b></div></div>' +
+    '<div class="rest-grid">'+cells+'</div></div>';
+}
+function showRest(sec, nextLabel, after, kind, nextName, info){
   RUN.afterRest = after;
   stopRepGuide();
   if(sec <= 0){ after(); return; }
@@ -2473,6 +2634,7 @@ function showRest(sec, nextLabel, after, kind, nextName){
     '<p class="run-target" style="text-align:center;margin-top:2px">'+esc(nextLabel)+'</p>' +
     ring(1, "var(--rest)", '<span id="bt" style="color:var(--rest)">'+fmtClock(sec)+'</span>', true) +
     '<p class="ann-line" id="next-ann"></p>' +
+    restInfoCard(info) +
     '<div class="run-actions">' +
     '<div class="run-row">' +
     '<button class="btn ghost" data-runact="rest-minus">− 15 s</button>' +
@@ -2481,8 +2643,6 @@ function showRest(sec, nextLabel, after, kind, nextName){
     '<button class="btn primary" data-runact="rest-skip">Passer le repos</button>' +
     '</div>' + ctrlRow();
   var rl = $("#ring-lbl"); if(rl) rl.textContent = "repos restant";
-  var pb = $("#run-content").querySelector('[data-runact="rest-skip"]');
-  if(pb) pb.textContent = "Passer le repos";
   startTimer(sec, function(rem){
     var el = $("#bt"); if(el) el.textContent = fmtClock(rem);
     setRing(rem / Math.max(RUN.restTotal, rem, 1));
@@ -2723,9 +2883,30 @@ function wireRunner(){
       if(RUN.paused) togglePause();
       exLog().series.push({ reps: $("#run-reps").value, charge: $("#run-charge").value });
       refreshHeader();
-      if(RUN.serie < ex.series){
+      if(inCircuit(RUN.idx)){
+        /* Enchaînement en circuit : aller au prochain membre (ou tour suivant) après le repos */
+        var step = nextCircuitStep();
+        if(step){
+          var info = buildRestInfo(step.idx, step.serie);
+          var goStep = function(){ RUN.idx = step.idx; RUN.serie = step.serie; showWork(); };
+          var nm = getExo(RUN.exos[step.idx].exoId);
+          showRest(ex.reposSerie, "Prochain : "+(nm?nm.n:"")+" · série "+step.serie, goStep, "circuit", nm?nm.n:"", info);
+        }else{
+          /* circuit terminé : passer au premier exercice après le circuit */
+          var members = circuitMembers(RUN.idx);
+          var lastMember = members[members.length-1];
+          if(lastMember < RUN.exos.length - 1){
+            var nIdx = lastMember + 1;
+            var info2 = buildRestInfo(nIdx, 1);
+            var go2 = function(){ RUN.idx = nIdx; RUN.serie = 1; showWork(); };
+            var nm2 = getExo(RUN.exos[nIdx].exoId);
+            showRest(ex.reposExo, "Prochain exercice : "+(nm2?nm2.n:""), go2, "exo", nm2?nm2.n:"", info2);
+          }else showGlobalFeel();
+        }
+      }else if(RUN.serie < ex.series){
         RUN.serie++;
-        showRest(ex.reposSerie, "Prochaine : série "+RUN.serie+"/"+ex.series, showWork, "serie");
+        var infoS = buildRestInfo(RUN.idx, RUN.serie);
+        showRest(ex.reposSerie, "Prochaine : série "+RUN.serie+"/"+ex.series, showWork, "serie", null, infoS);
       }else finishExo();
     }
     else if(act === "skip-exo"){ finishExo(); }
@@ -2749,8 +2930,10 @@ function wireRunner(){
     else if(act === "feel-ok"){
       exLog().note = $("#run-note") ? $("#run-note").value : "";
       if(RUN.idx < RUN.exos.length - 1){
-        var nx = getExo(RUN.exos[RUN.idx+1].exoId);
-        showRest(ex.reposExo, "Prochain exercice : "+(nx ? nx.n : ""), nextExo, "exo", nx ? nx.n : "");
+        var nIdxF = RUN.idx + 1;
+        var nx = getExo(RUN.exos[nIdxF].exoId);
+        var infoF = buildRestInfo(nIdxF, 1);
+        showRest(ex.reposExo, "Prochain exercice : "+(nx ? nx.n : ""), nextExo, "exo", nx ? nx.n : "", infoF);
       }else showGlobalFeel();
     }
     else if(act === "finish"){
