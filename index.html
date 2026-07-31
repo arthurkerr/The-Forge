@@ -561,6 +561,7 @@
   .rest-cell b{font-size:16px;font-variant-numeric:tabular-nums}
   .rest-cell b .ld{font-size:13px;font-weight:800;margin-left:2px}
   .ld.up{color:var(--mint)} .ld.down{color:var(--rest)}
+  .rest-hint{margin:9px 0 0;text-align:center;font-size:11.5px;color:var(--faint)}
 
   /* ---------- Circuits (exercices liés) ---------- */
   .exo-row.linked{border-left:3px solid var(--rest)}
@@ -791,7 +792,7 @@
   <p class="eyebrow" style="margin-top:18px">Application</p>
   <button class="btn ghost" id="btn-update" style="width:100%">🔄 Mettre à jour l'application</button>
   <p class="desc" id="app-ver" style="text-align:center;margin-top:8px"></p>
-  <p class="about">The Forge · Lot 20<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 21<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -2325,9 +2326,8 @@ function startRun(sessId, jourId, planId){
   audioKeepAlive();
   fsEnter();
   RUN.hdrIv = setInterval(function(){ if(RUN && !RUN.paused) refreshHeader(); }, 1000);
-  /* décompte de préparation avant le tout premier exercice (le mode temps a son propre départ) */
-  if(RUN.exos[0] && RUN.exos[0].mode === "time") showWork();
-  else preCountdown(showWork);
+  /* décompte de préparation : uniquement pour lancer la séance */
+  preCountdown(showWork);
 }
 window.startRun = startRun;
 Object.defineProperty(window, "RUN", { get: function(){ return RUN; } });
@@ -2387,9 +2387,11 @@ function buildRestInfo(idx, serie){
       serieLabel: inCircuit(idx) ? circuitPos(idx) : "1/1" };
   }
   var tgt = ex.perSerie ? ex.perSerie[serie-1] : {reps:ex.reps, charge:ex.charge};
+  var ch = chargeForNext(idx, serie);
   return { name:x.n, cat:x.c, mode:"reps", exoId:ex.exoId,
     serieNum:serie, totalSeries:ex.series,
-    reps:(tgt && tgt.reps) || ex.reps, charge:(tgt && tgt.charge) || ex.charge };
+    reps:(tgt && tgt.reps) || ex.reps,
+    charge:ch.val, chargeTxt:ch.txt, chargeSrc:ch.src };
 }
 function circuitPos(idx){
   var m = circuitMembers(idx);
@@ -2604,6 +2606,8 @@ function showWork(){
     var tr = parseInt(String(tgt.reps).match(/\d+/) ? String(tgt.reps).match(/\d+/)[0] : "10", 10) || 10;
     sugg = suggestCharge(ex.exoId, tr);
   }
+  /* charge résolue : identique à celle annoncée pendant le repos */
+  var chNext = chargeForNext(RUN.idx, RUN.serie);
   $("#run-content").innerHTML = runTop() +
     '<p class="run-phase" style="color:'+CATS[x.c].hex+'">'+CATS[x.c].label+'</p>' +
     '<h2>'+esc(x.n)+'</h2>' +
@@ -2618,10 +2622,10 @@ function showWork(){
     '<p class="seg-next" id="guide-line" style="margin:2px 0 0"></p>' +
     '<div class="run-inputs">' +
     '<div class="fld"><label>Répétitions faites</label><input id="run-reps" inputmode="numeric" value="'+esc(tgt.reps||"")+'"></div>' +
-    '<div class="fld"><label>Charge (kg)</label><input id="run-charge" inputmode="decimal" value="'+esc(tgt.charge || (sugg ? String(sugg.w) : ""))+'"></div>' +
+    '<div class="fld"><label>Charge (kg)</label><input id="run-charge" inputmode="decimal" value="'+esc(chNext.val || "")+'"></div>' +
     '</div>' +
     '<div class="info-cards">' +
-    '<div class="icard"><label>Charge</label><b>'+(tgt.charge ? esc(tgt.charge)+' kg' : '—')+'</b></div>' +
+    '<div class="icard"><label>Charge</label><b'+(chNext.val ? '' : ' style="font-size:13.5px;color:var(--muted)"')+'>'+chNext.txt+'</b></div>' +
     '<div class="icard"><label>Tempo</label><b>'+repTempo(x, RUN.type)+' s/rép</b></div>' +
     '<div class="icard"><label>Repos</label><b>'+fmtRepos(ex.reposSerie)+'</b></div>' +
     '</div>' +
@@ -2746,19 +2750,54 @@ function updateSegDisplay(bounds, si){
 }
 
 /* --- Repos --- */
-function loadIndicator(exoId, charge){
-  /* compare la charge à venir à la dernière charge réalisée sur cet exercice dans la séance */
-  if(!charge) return "";
-  var prev = null;
+/* Dernière charge réellement saisie sur cet exercice pendant la séance en cours */
+function lastChargeFor(exoId){
   for(var i = RUN.exos.length - 1; i >= 0; i--){
     var l = RUN.log[i];
     if(l && RUN.exos[i].exoId === exoId && l.series.length){
-      var last = l.series[l.series.length - 1].charge;
-      if(last){ prev = parseFloat(last); break; }
+      for(var s = l.series.length - 1; s >= 0; s--){
+        var c = l.series[s].charge;
+        if(c != null && String(c).trim() !== "") return String(c).trim();
+      }
     }
   }
-  var c = parseFloat(charge);
-  if(prev === null || isNaN(c)) return "";
+  return null;
+}
+/* Exercice sans charge externe (poids du corps) ? */
+function isBodyweight(x){
+  if(!x) return false;
+  if(x.c === "K") return true; /* calisthénie */
+  return /poids du corps|aucun|tapis de sol|barre de traction|anneaux|parall|^mur$|corde à sauter/i.test(x.e || "");
+}
+/* Charge à annoncer pour la prochaine série / le prochain exercice.
+   Priorité : plan de la série > plan de l'exercice > dernière charge utilisée >
+   suggestion Forge > libellé explicite (jamais de "—"). */
+function chargeForNext(idx, serie){
+  var ex = RUN.exos[idx];
+  var x = getExo(ex.exoId);
+  var perS = ex.perSerie && ex.perSerie[serie-1] ? ex.perSerie[serie-1] : null;
+  if(perS && perS.charge) return { txt:esc(String(perS.charge)) + " kg", val:String(perS.charge), src:"plan" };
+  if(ex.charge) return { txt:esc(String(ex.charge)) + " kg", val:String(ex.charge), src:"plan" };
+  var used = lastChargeFor(ex.exoId);
+  if(used) return { txt:esc(used) + " kg", val:used, src:"série précédente" };
+  var reps = (perS && perS.reps) || ex.reps || "10";
+  var m = String(reps).match(/\d+/);
+  var sg = suggestCharge(ex.exoId, m ? parseInt(m[0], 10) : 10);
+  if(sg && sg.w) return { txt:sg.w + " kg", val:String(sg.w), src:"suggestion" };
+  return isBodyweight(x)
+    ? { txt:"Poids du corps", val:null, src:"bw" }
+    : { txt:"À définir",      val:null, src:"none" };
+}
+window.chargeForNext = chargeForNext;
+window.lastChargeFor = lastChargeFor;
+
+function loadIndicator(exoId, charge){
+  /* compare la charge à venir à la dernière charge réalisée sur cet exercice dans la séance */
+  if(!charge) return "";
+  var prevStr = lastChargeFor(exoId);
+  if(prevStr === null) return "";
+  var prev = parseFloat(prevStr), c = parseFloat(charge);
+  if(isNaN(prev) || isNaN(c)) return "";
   if(c > prev) return ' <span class="ld up">▲</span>';
   if(c < prev) return ' <span class="ld down">▼</span>';
   return "";
@@ -2772,19 +2811,24 @@ function restInfoCard(info){
       '<div class="rest-cell"><label>Type</label><b style="font-size:13px">Chrono</b></div>' +
       '<div class="rest-cell"><label>Série</label><b>'+info.serieLabel+'</b></div>';
   }else{
-    var seriesLeft = info.totalSeries - info.serieNum + 1;
     var loadInd = loadIndicator(info.exoId, info.charge);
     cells = '<div class="rest-cell"><label>Série</label><b>'+info.serieNum+'/'+info.totalSeries+'</b></div>' +
       '<div class="rest-cell"><label>Répétitions</label><b>'+esc(info.reps||"?")+'</b></div>' +
-      '<div class="rest-cell"><label>Charge</label><b>'+(info.charge?esc(info.charge)+' kg'+loadInd:'—')+'</b></div>';
+      '<div class="rest-cell charge"><label>Charge</label><b'+
+      (info.charge === null ? ' style="font-size:13.5px;color:var(--muted)"' : '')+'>'+
+      info.chargeTxt+loadInd+'</b></div>';
   }
+  var hint = "";
+  if(info.chargeSrc === "suggestion") hint = '💡 Charge suggérée par The Forge — ajuste-la si besoin';
+  else if(info.chargeSrc === "série précédente") hint = 'Charge reprise de ta série précédente';
+  else if(info.chargeSrc === "none") hint = 'Aucune charge prévue — saisis la tienne au départ';
   return '<div class="rest-next"><div class="rn-top">'+thumb+
     '<div class="rn-lbl"><small>Prochain exercice</small><b>'+esc(info.name)+'</b></div></div>' +
-    '<div class="rest-grid">'+cells+'</div></div>';
+    '<div class="rest-grid">'+cells+'</div>' +
+    (hint ? '<p class="rest-hint">'+hint+'</p>' : '') + '</div>';
 }
 function showRest(sec, nextLabel, after, kind, nextName, info){
   RUN.afterRest = after;
-  RUN.restKind = kind;
   stopRepGuide();
   if(sec <= 0){ after(); return; }
   if(kind === "exo" && nextName) speak("Repos. Prochain exercice : " + nextName + ".");
@@ -2814,17 +2858,8 @@ function showRest(sec, nextLabel, after, kind, nextName, info){
     else if(rem >= 1 && rem <= 3) beep(600, 0.08);
   }, function(){
     beep(950, 0.45); vib(400);
-    /* décompte de préparation après le repos, sauf si le prochain effort est un chrono (départ propre) */
-    var nextIsTime = RUN.exos[RUN.idx] && RUN.exos[RUN.idx].mode === "time" && kind === "exo";
-    if(nextIsTime){
-      speak("C'est parti !");
-      RUN.afterRest();
-    }else{
-      preCountdown(function(){
-        speak(kind === "exo" ? "C'est parti !" : "Reprise !");
-        RUN.afterRest();
-      }, { rest:true });
-    }
+    speak(kind === "exo" ? "C'est parti !" : "Reprise !");
+    RUN.afterRest();
   });
 }
 
@@ -2985,32 +3020,43 @@ function gotoExo(i){
 }
 window.gotoExo = gotoExo;
 
+function refreshPauseUI(){
+  var rc = $("#run-content");
+  if(!rc) return;
+  var band = rc.querySelector(".paused-band");
+  if(RUN.paused && !band){
+    var d = document.createElement("div");
+    d.className = "paused-band"; d.textContent = "⏸ SÉANCE EN PAUSE";
+    var top = rc.querySelector(".run-top");
+    if(top) top.after(d); else rc.prepend(d);
+  }else if(!RUN.paused && band) band.remove();
+  var mb = rc.querySelector('[data-runact="pause-sess"]');
+  if(mb) mb.innerHTML = RUN.paused
+    ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>'
+    : '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+}
 function togglePause(){
   RUN.paused = !RUN.paused;
   if(RUN.paused){
     stopRepGuide();
     if(RUN.t) pauseTimer();
     speak("Séance en pause");
-  }else{
+    refreshPauseUI();
+    return;
+  }
+  refreshPauseUI();
+  /* Reprise après pause manuelle : décompte de préparation.
+     Exception : pendant un temps de repos, on garde uniquement le timer de repos. */
+  var rc = $("#run-content");
+  var onRest = !!(rc && rc.querySelector('[data-runact="rest-skip"]'));
+  var resume = function(){
+    if(!RUN || RUN.paused) return; /* l'utilisateur a re-mis en pause pendant le décompte */
     if(RUN.t) resumeTimer();
     speak("Reprise");
-  }
-  /* re-rendre l'écran courant pour rafraîchir bandeau + bouton */
-  if(RUN.t) { /* timer en cours : juste rafraîchir le haut */ }
-  var rc = $("#run-content");
-  if(rc){
-    var band = rc.querySelector(".paused-band");
-    if(RUN.paused && !band){
-      var d = document.createElement("div");
-      d.className = "paused-band"; d.textContent = "⏸ SÉANCE EN PAUSE";
-      rc.querySelector(".run-top").after(d);
-    }else if(!RUN.paused && band) band.remove();
-    var mb = rc.querySelector('[data-runact="pause-sess"]');
-    if(mb) mb.innerHTML = RUN.paused
-      ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>'
-      : '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
-  }
-  if(!RUN.paused && !RUN.t && curEx().mode === "reps") startRepGuide();
+    if(!RUN.t && curEx().mode === "reps") startRepGuide();
+  };
+  if(onRest) resume();
+  else preCountdown(resume, { rest:true });
 }
 window.togglePause = togglePause;
 
@@ -3090,12 +3136,7 @@ function wireRunner(){
     }
     else if(act === "rest-minus") adjustTimer(-15);
     else if(act === "rest-plus") adjustTimer(15);
-    else if(act === "rest-skip"){
-      var after = RUN.afterRest; stopTimer();
-      var nextIsTime = RUN.exos[RUN.idx] && RUN.exos[RUN.idx].mode === "time" && RUN.restKind === "exo";
-      if(nextIsTime){ after(); }
-      else{ preCountdown(after, { rest:true }); }
-    }
+    else if(act === "rest-skip"){ var after = RUN.afterRest; stopTimer(); after(); }
     else if(act === "replace"){ stopRepGuide(); openPicker(null, "replace"); }
     else if(act === "list") openExoList();
     else if(act === "prev-exo") gotoExo(RUN.idx - 1);
@@ -4867,7 +4908,7 @@ function init(){
     if(c) openExo(parseInt(c.getAttribute("data-id"),10));
   });
 }
-var APP_VERSION = "20";
+var APP_VERSION = "21";
 window.APP_VERSION = APP_VERSION;
 /* Environnement : application native (Capacitor) ou PWA web ? */
 var IS_NATIVE = (function(){
