@@ -562,6 +562,30 @@
   .rest-cell b .ld{font-size:13px;font-weight:800;margin-left:2px}
   .ld.up{color:var(--mint)} .ld.down{color:var(--rest)}
   .rest-hint{margin:9px 0 0;text-align:center;font-size:11.5px;color:var(--faint)}
+  /* Encart « dernier ressenti » */
+  .last-fb{margin-top:11px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.22);
+    border-left:3px solid var(--gold);border-radius:12px;padding:10px 12px}
+  .lfb-head{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;
+    letter-spacing:.07em;text-transform:uppercase;color:var(--gold)}
+  .lfb-emo{font-size:14px}
+  .lfb-date{font-size:12px;color:var(--muted);margin-top:3px}
+  .lfb-perf{font-size:12px;color:var(--faint)}
+  .lfb-note{font-size:13px;color:var(--ink);margin-top:6px;line-height:1.45;font-style:italic}
+  .lfb-edit{width:100%;margin-top:10px;font-size:13px}
+  /* Éditeur de charge express */
+  .charge-edit{padding:2px 0}
+  .charge-edit label{display:block;font-size:10.5px;font-weight:800;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--faint);margin-bottom:8px;text-align:center}
+  .ce-row{display:flex;align-items:center;gap:8px;justify-content:center}
+  .ce-step{background:var(--surface2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 12px;font-size:14px;font-weight:700;color:var(--ink);flex:0 0 auto}
+  .ce-step:active{background:var(--line)}
+  .ce-row input{flex:1;min-width:0;max-width:120px;text-align:center;font-size:22px;font-weight:800;
+    background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px;color:var(--ink)}
+  .ce-unit{font-size:14px;color:var(--faint);flex:0 0 auto}
+  .ce-note{margin:8px 0 0;text-align:center;font-size:11px;color:var(--faint)}
+  .ce-actions{display:flex;gap:8px;margin-top:10px}
+  .ce-actions .btn{flex:1}
 
   /* ---------- Circuits (exercices liés) ---------- */
   .exo-row.linked{border-left:3px solid var(--rest)}
@@ -792,7 +816,7 @@
   <p class="eyebrow" style="margin-top:18px">Application</p>
   <button class="btn ghost" id="btn-update" style="width:100%">🔄 Mettre à jour l'application</button>
   <p class="desc" id="app-ver" style="text-align:center;margin-top:8px"></p>
-  <p class="about">The Forge · Lot 25<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 26<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -2378,17 +2402,93 @@ window.nextCircuitStep = nextCircuitStep;
 window.circuitMembers = circuitMembers;
 
 /* Construit l'objet d'info pour l'écran de repos (prochain effort) */
+/* Dernier ressenti enregistré pour un exercice (séances passées, la plus récente d'abord).
+   Renvoie null si aucun commentaire n'a jamais été laissé sur cet exercice. */
+function lastFeedbackFor(exoId){
+  var hist = state.data.history || [];
+  for(var i = 0; i < hist.length; i++){
+    var e = hist[i];
+    if(!e.exos || !e.exos.length) continue;
+    for(var j = 0; j < e.exos.length; j++){
+      var l = e.exos[j];
+      if(l.exoId !== exoId) continue;
+      var note = (l.note || "").trim();
+      if(!note) continue;
+      var series = l.series || [];
+      var charges = [], reps = [];
+      series.forEach(function(s){
+        var c = parseFloat(String(s.charge || "").replace(",", "."));
+        if(!isNaN(c)) charges.push(c);
+        var r = String(s.reps || "").trim();
+        if(r) reps.push(r);
+      });
+      var repsTxt = null;
+      if(reps.length) repsTxt = reps.every(function(r){ return r === reps[0]; }) ? reps[0] : reps.join(" / ");
+      return {
+        ts: e.ts || 0, note: note, ressenti: l.ressenti || 0,
+        nbSeries: series.length,
+        charge: charges.length ? Math.max.apply(null, charges) : null,
+        reps: repsTxt, mode: l.mode, dureeSec: l.dureeSec || 0
+      };
+    }
+  }
+  return null;
+}
+window.lastFeedbackFor = lastFeedbackFor;
+
+function lastFeedbackHTML(exoId){
+  var fb = lastFeedbackFor(exoId);
+  if(!fb) return "";
+  var meta = [];
+  if(fb.ts) meta.push(new Date(fb.ts).toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"}));
+  var perf = [];
+  if(fb.charge != null) perf.push(String(fb.charge).replace(".", ",") + " kg");
+  if(fb.nbSeries && fb.reps) perf.push(fb.nbSeries + " × " + fb.reps);
+  else if(fb.mode === "time" && fb.dureeSec) perf.push(fmtRepos(fb.dureeSec));
+  return '<div class="last-fb">' +
+    '<div class="lfb-head">📝 Dernier ressenti' +
+      (fb.ressenti ? '<span class="lfb-emo">' + FEEL_EMO[fb.ressenti-1] + '</span>' : '') + '</div>' +
+    (meta.length ? '<div class="lfb-date">' + esc(meta[0]) + '</div>' : '') +
+    (perf.length ? '<div class="lfb-perf">' + esc(perf.join(" · ")) + '</div>' : '') +
+    '<div class="lfb-note">« ' + esc(fb.note) + ' »</div>' +
+    '</div>';
+}
+
+/* Applique une nouvelle charge au prochain effort et aux séries suivantes du même exercice */
+function applyChargeFrom(idx, serie, val){
+  var ex = RUN.exos[idx];
+  if(!ex) return;
+  if(ex.perSerie && ex.perSerie.length){
+    for(var k = serie - 1; k < ex.perSerie.length; k++)
+      if(ex.perSerie[k]) ex.perSerie[k].charge = val;
+  }else ex.charge = val;
+}
+/* Re-rend l'encart du prochain exercice sans toucher au chrono de repos */
+function refreshRestCard(){
+  if(!RUN || !RUN.restCtx) return;
+  var rc = $("#run-content");
+  if(!rc) return;
+  var card = rc.querySelector(".rest-next");
+  if(!card) return;
+  var info = buildRestInfo(RUN.restCtx.idx, RUN.restCtx.serie);
+  if(!info) return;
+  var tmp = document.createElement("div");
+  tmp.innerHTML = restInfoCard(info);
+  card.replaceWith(tmp.firstElementChild);
+}
+window.refreshRestCard = refreshRestCard;
+
 function buildRestInfo(idx, serie){
   var ex = RUN.exos[idx];
   var x = getExo(ex.exoId);
   if(!x) return null;
   if(ex.mode === "time"){
-    return { name:x.n, cat:x.c, mode:"time", dur:segTotal(ex),
+    return { name:x.n, cat:x.c, mode:"time", idx:idx, exoId:ex.exoId, dur:segTotal(ex),
       serieLabel: inCircuit(idx) ? circuitPos(idx) : "1/1" };
   }
   var tgt = ex.perSerie ? ex.perSerie[serie-1] : {reps:ex.reps, charge:ex.charge};
   var ch = chargeForNext(idx, serie);
-  return { name:x.n, cat:x.c, mode:"reps", exoId:ex.exoId,
+  return { name:x.n, cat:x.c, mode:"reps", exoId:ex.exoId, idx:idx,
     serieNum:serie, totalSeries:ex.series,
     reps:(tgt && tgt.reps) || ex.reps,
     charge:ch.val, chargeTxt:ch.txt, chargeSrc:ch.src };
@@ -2772,18 +2872,19 @@ function isBodyweight(x){
 /* Charge à annoncer pour la prochaine série / le prochain exercice.
    Priorité : plan de la série > plan de l'exercice > dernière charge utilisée >
    suggestion Forge > libellé explicite (jamais de "—"). */
+function kgTxt(v){ return esc(String(v).replace(".", ",")) + " kg"; }
 function chargeForNext(idx, serie){
   var ex = RUN.exos[idx];
   var x = getExo(ex.exoId);
   var perS = ex.perSerie && ex.perSerie[serie-1] ? ex.perSerie[serie-1] : null;
-  if(perS && perS.charge) return { txt:esc(String(perS.charge)) + " kg", val:String(perS.charge), src:"plan" };
-  if(ex.charge) return { txt:esc(String(ex.charge)) + " kg", val:String(ex.charge), src:"plan" };
+  if(perS && perS.charge) return { txt:kgTxt(perS.charge), val:String(perS.charge), src:"plan" };
+  if(ex.charge) return { txt:kgTxt(ex.charge), val:String(ex.charge), src:"plan" };
   var used = lastChargeFor(ex.exoId);
-  if(used) return { txt:esc(used) + " kg", val:used, src:"série précédente" };
+  if(used) return { txt:kgTxt(used), val:used, src:"série précédente" };
   var reps = (perS && perS.reps) || ex.reps || "10";
   var m = String(reps).match(/\d+/);
   var sg = suggestCharge(ex.exoId, m ? parseInt(m[0], 10) : 10);
-  if(sg && sg.w) return { txt:sg.w + " kg", val:String(sg.w), src:"suggestion" };
+  if(sg && sg.w) return { txt:kgTxt(sg.w), val:String(sg.w), src:"suggestion" };
   return isBodyweight(x)
     ? { txt:"Poids du corps", val:null, src:"bw" }
     : { txt:"À définir",      val:null, src:"none" };
@@ -2822,13 +2923,36 @@ function restInfoCard(info){
   if(info.chargeSrc === "suggestion") hint = '💡 Charge suggérée par The Forge — ajuste-la si besoin';
   else if(info.chargeSrc === "série précédente") hint = 'Charge reprise de ta série précédente';
   else if(info.chargeSrc === "none") hint = 'Aucune charge prévue — saisis la tienne au départ';
+  var corps;
+  if(RUN && RUN.editCharge && info.mode === "reps"){
+    corps = '<div class="charge-edit">' +
+      '<label>Charge prévue pour cet exercice</label>' +
+      '<div class="ce-row">' +
+        '<button class="ce-step" data-runact="ce-minus">−2,5</button>' +
+        '<input id="ce-input" inputmode="decimal" value="'+esc(info.charge || "")+'" placeholder="—">' +
+        '<span class="ce-unit">kg</span>' +
+        '<button class="ce-step" data-runact="ce-plus">+2,5</button>' +
+      '</div>' +
+      '<p class="ce-note">S\'applique à cette série et aux suivantes, pour cette séance.</p>' +
+      '<div class="ce-actions">' +
+        '<button class="btn ghost" data-runact="ce-cancel">Annuler</button>' +
+        '<button class="btn primary" data-runact="ce-ok">Valider</button>' +
+      '</div></div>';
+  }else{
+    corps = '<div class="rest-grid">'+cells+'</div>' +
+      (hint ? '<p class="rest-hint">'+hint+'</p>' : '') +
+      lastFeedbackHTML(info.exoId) +
+      (info.mode === "reps"
+        ? '<button class="btn ghost lfb-edit" data-runact="edit-charge">⚖️ Modifier les charges</button>' : '');
+  }
   return '<div class="rest-next"><div class="rn-top">'+thumb+
     '<div class="rn-lbl"><small>Prochain exercice</small><b>'+esc(info.name)+'</b></div></div>' +
-    '<div class="rest-grid">'+cells+'</div>' +
-    (hint ? '<p class="rest-hint">'+hint+'</p>' : '') + '</div>';
+    corps + '</div>';
 }
 function showRest(sec, nextLabel, after, kind, nextName, info){
   RUN.afterRest = after;
+  RUN.editCharge = false;
+  RUN.restCtx = info ? { idx: info.idx, serie: info.serieNum || 1 } : null;
   stopRepGuide();
   if(sec <= 0){ after(); return; }
   if(kind === "exo" && nextName) speak("Repos. Prochain exercice : " + nextName + ".");
@@ -3137,6 +3261,23 @@ function wireRunner(){
     else if(act === "rest-minus") adjustTimer(-15);
     else if(act === "rest-plus") adjustTimer(15);
     else if(act === "rest-skip"){ var after = RUN.afterRest; stopTimer(); after(); }
+    else if(act === "edit-charge"){ RUN.editCharge = true; refreshRestCard(); }
+    else if(act === "ce-cancel"){ RUN.editCharge = false; refreshRestCard(); }
+    else if(act === "ce-minus" || act === "ce-plus"){
+      var ci = $("#ce-input");
+      if(ci){
+        var v = parseFloat(String(ci.value || "0").replace(",", ".")) || 0;
+        v = Math.max(0, Math.round((v + (act === "ce-plus" ? 2.5 : -2.5)) * 100) / 100);
+        ci.value = String(v).replace(".", ",");
+      }
+    }
+    else if(act === "ce-ok"){
+      var ci2 = $("#ce-input");
+      var val = ci2 ? String(ci2.value || "").replace(",", ".").trim() : "";
+      if(RUN.restCtx) applyChargeFrom(RUN.restCtx.idx, RUN.restCtx.serie, val);
+      RUN.editCharge = false; refreshRestCard();
+      toast(val ? "Charge mise à jour : " + val.replace(".", ",") + " kg" : "Charge effacée");
+    }
     else if(act === "replace"){ stopRepGuide(); openPicker(null, "replace"); }
     else if(act === "list") openExoList();
     else if(act === "prev-exo") gotoExo(RUN.idx - 1);
@@ -4943,7 +5084,7 @@ function init(){
     if(c) openExo(parseInt(c.getAttribute("data-id"),10));
   });
 }
-var APP_VERSION = "25";
+var APP_VERSION = "26";
 window.APP_VERSION = APP_VERSION;
 /* Environnement : application native (Capacitor) ou PWA web ? */
 var IS_NATIVE = (function(){
