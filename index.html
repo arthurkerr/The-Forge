@@ -792,7 +792,7 @@
   <p class="eyebrow" style="margin-top:18px">Application</p>
   <button class="btn ghost" id="btn-update" style="width:100%">🔄 Mettre à jour l'application</button>
   <p class="desc" id="app-ver" style="text-align:center;margin-top:8px"></p>
-  <p class="about">The Forge · Lot 22<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 23<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -3824,21 +3824,25 @@ function computeMetrics(){
    L'XP dérive des points de badges (× facteur) pour atteindre
    l'échelle du visuel (Débutant 0 → Légende 25000+).
 ============================================================ */
+/* Paliers calibrés par simulation d'un pratiquant régulier (3 à 4 séances par semaine) :
+   niveau 2 en ~2 semaines, 3 en ~1 mois, 4 en ~3 mois, 5 en ~6 mois, 6 après ~13 mois. */
 var XP_LEVELS = [
-  { lvl:1, nom:"Débutant", min:0,     max:499,   couleur:"#9AA3B2", accent:"#B0B7C3",
+  { lvl:1, nom:"Débutant", min:0,     max:3499,  couleur:"#9AA3B2", accent:"#B0B7C3",
     focus:"Apprends les bases et construis de bonnes habitudes.", devise:"Les bases comptent" },
-  { lvl:2, nom:"Apprenti", min:500,   max:1999,  couleur:"#34D399", accent:"#34D399",
+  { lvl:2, nom:"Apprenti", min:3500,  max:7499,  couleur:"#34D399", accent:"#34D399",
     focus:"La discipline crée les résultats.", devise:"La régularité paie" },
-  { lvl:3, nom:"Confirmé", min:2000,  max:4999,  couleur:"#60A5FA", accent:"#60A5FA",
+  { lvl:3, nom:"Confirmé", min:7500,  max:15999, couleur:"#60A5FA", accent:"#60A5FA",
     focus:"Chaque séance te rapproche de ton objectif.", devise:"La progression s'installe" },
-  { lvl:4, nom:"Expert",   min:5000,  max:9999,  couleur:"#A78BFA", accent:"#A78BFA",
+  { lvl:4, nom:"Expert",   min:16000, max:28999, couleur:"#A78BFA", accent:"#A78BFA",
     focus:"Tu repousses tes limites chaque jour.", devise:"Le dépassement" },
-  { lvl:5, nom:"Maître",   min:10000, max:24999, couleur:"#FF8A3D", accent:"#FF8A3D",
+  { lvl:5, nom:"Maître",   min:29000, max:50999, couleur:"#FF8A3D", accent:"#FF8A3D",
     focus:"La force est en toi.", devise:"La maîtrise" },
-  { lvl:6, nom:"Légende",  min:25000, max:Infinity, couleur:"#F5C542", accent:"#F5C542",
+  { lvl:6, nom:"Légende",  min:51000, max:Infinity, couleur:"#F5C542", accent:"#F5C542",
     focus:"Ton histoire inspire les autres.", devise:"Deviens une légende" }
 ];
-var XP_FACTOR = 6; /* points de badges -> XP (ajustable pour équilibrer la courbe) */
+window.XP_LEVELS = XP_LEVELS;
+var XP_FACTOR = 6;        /* poids des points de badges dans l'XP */
+var XP_PER_SESSION = 50;  /* XP garanti par séance : la barre avance à chaque entraînement */
 function levelForXp(xp){
   var def = XP_LEVELS[0];
   for(var i = 0; i < XP_LEVELS.length; i++) if(xp >= XP_LEVELS[i].min) def = XP_LEVELS[i];
@@ -3849,7 +3853,9 @@ function levelForXp(xp){
   return { xp:xp, level:def, next:next, pct:pct, toNext: next ? (next.min - xp) : 0 };
 }
 function computeXP(){
-  return levelForXp(computeBadges().points * XP_FACTOR);
+  var bs = computeBadges();
+  var seances = (bs.metrics && bs.metrics.totalSessions) || 0;
+  return levelForXp(bs.points * XP_FACTOR + seances * XP_PER_SESSION);
 }
 window.computeXP = computeXP;
 window.levelForXp = levelForXp;
@@ -4913,7 +4919,7 @@ function init(){
     if(c) openExo(parseInt(c.getAttribute("data-id"),10));
   });
 }
-var APP_VERSION = "22";
+var APP_VERSION = "23";
 window.APP_VERSION = APP_VERSION;
 /* Environnement : application native (Capacitor) ou PWA web ? */
 var IS_NATIVE = (function(){
