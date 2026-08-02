@@ -658,6 +658,199 @@
   }
   .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* ============================================================
+     MODE PAYSAGE (téléphone) — hauteur utile ~330-430 px
+     Principes appliqués :
+     · la navigation quitte le bas de l'écran pour le côté gauche
+       (le bas est la zone la plus coûteuse en hauteur) ;
+     · ce qui s'empile verticalement passe en colonnes ;
+     · pendant une séance, l'anneau et les commandes restent
+       visibles ensemble, sans défilement.
+  ============================================================ */
+  @media (orientation:landscape) and (max-height:540px){
+
+    /* --- Navigation latérale --- */
+    .nav{
+      top:0; bottom:0; right:auto; width:72px; height:100%;
+      flex-direction:column; justify-content:center;
+      border-top:0; border-right:1px solid var(--line);
+      padding:0 0 0 env(safe-area-inset-left,0px);
+    }
+    .nav button{ flex:0 0 auto; padding:10px 2px; font-size:9.5px }
+    .nav button svg{ width:19px; height:19px }
+    .page{ padding:6px 14px 14px 86px }
+
+    /* En-tête plus compact : hauteur récupérée pour le contenu */
+    .brand-row{ margin-bottom:2px }
+    .about{ margin-top:14px }
+
+    /* --- AGENDA : calendrier | jour sélectionné --- */
+    #page-agenda.active{
+      display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      grid-template-rows:auto auto 1fr; gap:0 16px; align-content:start;
+    }
+    #page-agenda.active .cal-head{ grid-column:1 }
+    #page-agenda.active #gps-start{ grid-column:1; margin:2px 0 6px }
+    #page-agenda.active .cal-grid{ grid-column:1 }
+    #page-agenda .cal-grid button{ height:29px; font-size:11.5px }
+    #page-agenda .cal-dows{ font-size:10px }
+    #page-agenda.active .day-panel{
+      grid-column:2; grid-row:1 / -1; margin-top:0;
+      max-height:calc(100vh - 30px); overflow-y:auto;
+    }
+
+    /* --- EXERCICES : grille plus dense, filtres compacts --- */
+    #page-bib .exo-list{ grid-template-columns:repeat(5,1fr) }
+    #page-bib .chips{ padding:8px 2px 2px }
+    #page-bib .selects{ margin-top:6px }
+
+    /* --- SUIVI : indicateurs sur une ligne, graphiques côte à côte --- */
+    #page-suivi .kpis{ margin-bottom:10px }
+    #page-suivi #hist-root{
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:start;
+    }
+    #page-suivi #hist-root > .eyebrow{ grid-column:1 / -1; margin-top:4px }
+
+    /* --- PROFIL : compagnon à gauche, réglages à droite --- */
+    #page-reglages.active{
+      display:grid; grid-template-columns:minmax(0,300px) minmax(0,1fr);
+      gap:0 18px; align-content:start;
+    }
+    /* Colonne 1 : identité + compagnon. Colonne 2 : tout le reste, en flux
+       continu à partir de la première ligne (sinon les blocs s'empilent
+       à la suite de la colonne 1). */
+    #page-reglages.active{ grid-template-rows:auto auto 1fr }
+    #page-reglages.active .prof-head{ grid-column:1; grid-row:1; margin:4px 0 10px }
+    #page-reglages.active #companion{ grid-column:1; grid-row:2 }
+    #page-reglages.active .av-gallery{ grid-column:1; grid-row:3; align-self:start }
+    #page-reglages.active > *:not(.prof-head):not(#companion):not(.av-gallery){
+      grid-column:2; grid-row:auto;
+    }
+    /* la colonne de droite occupe une seule cellule qui défile */
+    #page-reglages.active{ align-items:start }
+    #page-reglages.active .eyebrow:first-of-type{ margin-top:4px }
+    .comp-visual{ height:180px }
+    .comp-card{ padding:10px }
+    .comp-badge{ width:46px; top:9px; left:9px; padding:4px 3px }
+    .comp-badge b{ font-size:20px }
+    .comp-name{ font-size:18px }
+    .comp-focus{ font-size:11.5px }
+    /* Le formulaire est fait de rangées flex : on les répartit sur 2 colonnes
+       plutôt que d'imposer une grille aux champs eux-mêmes (débordement sinon). */
+    .prof-form{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 12px; align-items:start }
+    .prof-form > *{ min-width:0 }
+    .prof-form .pf-row{ min-width:0 }
+    .prof-form .pf-row .fld{ min-width:0 }
+
+    /* --- SÉANCE EN COURS : anneau | informations et actions ---
+       La grille CSS placerait chaque enfant sur sa propre ligne, ce qui
+       ré-empilerait tout. On utilise donc un flux flottant : l'anneau
+       flotte à gauche, le reste du contenu s'écoule à sa droite. */
+    .runner{ padding:8px 14px 14px calc(14px + env(safe-area-inset-left,0px)) }
+    /* L'anneau doit flotter dès le haut du contenu pour que titre, saisies et
+       actions s'écoulent à sa droite. On le sort du flux vertical en le
+       positionnant sous l'en-tête, et on décale la colonne de texte. */
+    #run-content{ display:block; overflow:hidden; position:relative }
+    #run-content > .run-top{ margin-bottom:2px }
+    #run-content > .ring-wrap{
+      position:absolute; left:0; top:56px; width:34%; max-width:170px; margin:0;
+    }
+    /* toute la colonne de droite est décalée de la largeur de l'anneau */
+    #run-content > *:not(.run-top):not(.ring-wrap):not(.ctrl-row){
+      margin-left:calc(34% + 14px); max-width:calc(66% - 14px);
+    }
+    .ring-wrap svg{ width:100%; max-width:150px; height:auto }
+    .ring-txt .big{ font-size:34px }
+    .ring-txt .big.mid{ font-size:26px }
+    .ring-lbl, #ring-lbl{ font-size:9.5px }
+    /* Les commandes restent dans le flux de droite, juste après les actions :
+       elles suivent ainsi la hauteur réelle du contenu et ne débordent pas. */
+    /* Les commandes reviennent sous l'anneau, dans l'espace libre à gauche */
+    #run-content > .ctrl-row{
+      position:absolute; left:0; top:216px; width:34%; max-width:170px;
+      margin:0; gap:8px; justify-content:center;
+    }
+    .cbtn{ width:40px; height:40px }
+    .cbtn.main{ width:50px; height:50px }
+    .cbtn svg{ width:20px; height:20px }
+    /* Colonne de droite : compacte pour tenir dans la hauteur */
+    .runner h2{ font-size:18px; margin-top:2px }
+    #run-content > .run-phase{ margin:0 }
+    #run-content > .run-target{ margin-top:3px; font-size:13.5px }
+    .serie-pills, .chip-row{ margin:6px 0 2px; gap:5px }
+    .run-inputs{ margin-top:6px; gap:8px }
+    .fld label{ font-size:10px; margin-bottom:3px }
+    .fld input{ padding:9px 10px; font-size:15px }
+    .info-cards{ margin-top:5px; gap:6px }
+    .info-cards .icard{ padding:6px 8px }
+    .info-cards .icard b{ font-size:13.5px }
+    .info-cards .icard label{ font-size:9px }
+    .run-actions{ margin-top:5px; gap:5px }
+    .run-actions .btn{ padding:10px 12px; font-size:13.5px }
+    .run-inputs .fld input{ padding:8px 10px }
+    #guide-line, .ann-line{ font-size:11px; margin-top:3px }
+    .rest-next{ margin-top:8px; padding:9px 10px }
+    .rest-next .rn-top{ margin-bottom:6px }
+    .rest-cell b{ font-size:14.5px }
+    .last-fb{ margin-top:7px; padding:8px 10px }
+    .lfb-note{ font-size:11.5px; margin-top:4px }
+    .lfb-edit{ margin-top:7px; padding:9px }
+    .ann-tl{ max-height:84px; overflow-y:auto }
+
+    /* Décompte : reste centré sur tout l'écran */
+    .countdown .cd-num{ font-size:88px }
+    .cd-ring{ width:145px; height:145px }
+    .cd-skip{ bottom:14px }
+
+    /* --- CARDIO GPS --- */
+    .gps-map{ height:145px }
+    .gps-stats{ grid-template-columns:repeat(6,1fr) }
+    .gps-stat b{ font-size:15px }
+
+    /* --- Feuilles, fiches et fenêtres : hauteur maîtrisée --- */
+    .sheet{ max-height:94vh }
+    .sheet .sh-body{ max-height:calc(94vh - 60px); overflow-y:auto }
+    .cfg-grid{ grid-template-columns:repeat(4,1fr) }
+    .modal .m-card{ max-height:92vh; overflow-y:auto }
+  }
+
+  /* Paysage très bas (≤ 380 px) : on resserre encore pour éviter le défilement */
+  @media (orientation:landscape) and (max-height:380px){
+    .runner{ padding:6px 12px 10px calc(12px + env(safe-area-inset-left,0px)) }
+    #run-content > .ring-wrap{ top:46px; max-width:140px }
+    .ring-wrap svg{ max-width:126px }
+    .ring-txt .big{ font-size:28px }
+    .ring-txt .big.mid{ font-size:22px }
+    #run-content > .ctrl-row{ top:182px; max-width:140px; gap:7px }
+    .cbtn{ width:35px; height:35px }
+    .cbtn.main{ width:43px; height:43px }
+    .cbtn svg{ width:16px; height:16px }
+    .runner h2{ font-size:16px }
+    #run-content > .run-top{ margin-bottom:0 }
+    .chip-row, .serie-pills{ margin:3px 0 0 }
+    .run-inputs{ margin-top:4px }
+    .fld label{ font-size:9px }
+    .fld input{ padding:7px 9px; font-size:14px }
+    .info-cards{ margin-top:4px; gap:5px }
+    .info-cards .icard{ padding:5px 7px }
+    .info-cards .icard b{ font-size:12.5px }
+    .run-actions{ margin-top:4px; gap:4px }
+    .run-actions .btn{ padding:9px 10px; font-size:13px }
+    .rest-next{ margin-top:6px; padding:8px }
+    .rest-cell{ padding:6px 4px }
+    .rest-cell b{ font-size:13px }
+    .last-fb{ margin-top:6px; padding:7px 9px }
+    .lfb-note{ font-size:11px }
+    .lfb-edit{ margin-top:6px; padding:8px }
+    .nav button{ padding:7px 2px; font-size:9px }
+    .nav button svg{ width:17px; height:17px }
+  }
+
+  /* Paysage sur tablette : on conserve la mise en page portrait, plus large */
+  @media (orientation:landscape) and (min-height:541px){
+    .exo-list{ grid-template-columns:repeat(4,1fr) }
+  }
+
   @media (prefers-reduced-motion:reduce){
     *{transition:none !important;animation:none !important}
   }
@@ -816,7 +1009,7 @@
   <p class="eyebrow" style="margin-top:18px">Application</p>
   <button class="btn ghost" id="btn-update" style="width:100%">🔄 Mettre à jour l'application</button>
   <p class="desc" id="app-ver" style="text-align:center;margin-top:8px"></p>
-  <p class="about">The Forge · Lot 26<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 27<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -5084,7 +5277,7 @@ function init(){
     if(c) openExo(parseInt(c.getAttribute("data-id"),10));
   });
 }
-var APP_VERSION = "26";
+var APP_VERSION = "27";
 window.APP_VERSION = APP_VERSION;
 /* Environnement : application native (Capacitor) ou PWA web ? */
 var IS_NATIVE = (function(){
