@@ -667,6 +667,219 @@
      · pendant une séance, l'anneau et les commandes restent
        visibles ensemble, sans défilement.
   ============================================================ */
+/* ============================================================
+     ÉCRAN DE SÉANCE — refonte premium (maquettes officielles)
+  ============================================================ */
+  .run-body{ display:flex; flex-direction:column; gap:14px }
+  .run-side{ display:flex; flex-direction:column; align-items:center; gap:12px }
+  .run-main{ min-width:0 }
+
+  /* Badge de phase (REPOS / EFFORT) */
+  .phase-badge{
+    display:inline-block; padding:5px 16px; border-radius:8px 8px 8px 0;
+    font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+  }
+  .phase-badge.rest{ background:rgba(255,138,61,.16); color:var(--rest); border:1px solid rgba(255,138,61,.4) }
+  .phase-badge.work{ background:rgba(167,139,250,.16); color:var(--gold); border:1px solid rgba(167,139,250,.4) }
+  .next-line{ text-align:center; color:var(--muted); font-size:14.5px; margin:10px 0 12px }
+  .next-line b{ color:var(--ink); font-weight:750 }
+
+  /* Carte « reprise automatique » */
+  .auto-card{
+    display:flex; align-items:center; gap:10px; width:100%; max-width:290px;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px;
+  }
+  .auto-card .ac-txt{ flex:1; min-width:0 }
+  .auto-card small{ display:block; font-size:10px; font-weight:800; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--gold) }
+  .auto-card span{ display:block; font-size:12px; color:var(--faint); margin-top:2px }
+  .auto-card b{ display:block; font-size:20px; font-variant-numeric:tabular-nums; margin-top:1px }
+  .auto-card .ac-ico{ font-size:22px; flex:0 0 auto; opacity:.85 }
+
+  /* Bouton de fin de séance */
+  .end-btn{
+    width:100%; max-width:290px; background:rgba(248,113,113,.08);
+    border:1px solid rgba(248,113,113,.45); color:var(--coral); font-weight:750;
+  }
+  .end-btn:active{ background:rgba(248,113,113,.16) }
+
+  /* Carte principale de l'exercice */
+  .main-card{
+    position:relative; overflow:hidden;
+    background:linear-gradient(155deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+    border:1px solid var(--line); border-radius:18px; padding:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    animation:cardIn .35s ease-out;
+  }
+  @keyframes cardIn{ from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
+  .main-card .mc-bg{
+    position:absolute; right:-6px; top:50%; transform:translateY(-50%);
+    width:52%; max-width:320px; color:var(--ink); opacity:.11; pointer-events:none;
+  }
+  .main-card .mc-bg svg{ width:100%; height:auto }
+  .mc-head{ display:flex; align-items:center; gap:12px; position:relative }
+  .mc-ico{
+    flex:0 0 auto; width:46px; height:46px; border-radius:13px; display:flex;
+    align-items:center; justify-content:center; color:var(--gold);
+    background:rgba(167,139,250,.12); border:1.5px solid;
+  }
+  .mc-head small{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--gold) }
+  .mc-head b{ display:block; font-size:20px; font-weight:800; line-height:1.15; margin-top:2px }
+
+  .mc-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; position:relative }
+  .mc-stat{
+    background:rgba(255,255,255,.045); border:1px solid var(--line);
+    border-radius:13px; padding:11px 8px; text-align:center;
+  }
+  .mc-stat label{ display:block; font-size:10px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--faint); margin-bottom:5px }
+  .mc-stat b{ font-size:21px; font-weight:800; font-variant-numeric:tabular-nums }
+  .mc-stat b.soft{ font-size:14px; color:var(--muted) }
+  .mc-stat .mc-edit{
+    display:inline-flex; align-items:center; gap:4px; margin-top:6px; padding:4px 10px;
+    font-size:10.5px; font-weight:750; color:var(--gold); border-radius:8px;
+    background:rgba(167,139,250,.12); border:1px solid rgba(167,139,250,.35);
+  }
+  .mc-stat .mc-edit:active{ transform:scale(.96) }
+  .mc-hint{ margin:11px 0 0; text-align:center; font-size:12px; color:var(--faint) }
+
+  /* Carte « dernier ressenti » */
+  .last-fb{
+    margin-top:12px; position:relative;
+    background:rgba(167,139,250,.07); border:1px solid rgba(167,139,250,.25);
+    border-left:3px solid var(--gold); border-radius:13px; padding:11px 13px;
+  }
+  .lfb-top{ display:flex; align-items:center; justify-content:space-between; gap:10px }
+  .lfb-head{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--gold) }
+  .lfb-emo{ font-size:14px }
+  .lfb-hist{
+    display:inline-flex; align-items:center; gap:5px; padding:6px 11px; flex:0 0 auto;
+    font-size:10.5px; font-weight:750; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--gold); border-radius:9px; background:rgba(167,139,250,.12);
+    border:1px solid rgba(167,139,250,.35);
+  }
+  .lfb-hist:active{ transform:scale(.96) }
+  .lfb-date{ font-size:12.5px; color:var(--muted); margin-top:6px }
+  .lfb-perf{ font-size:12.5px; color:var(--faint); margin-top:1px }
+  .lfb-note{ font-size:13px; color:var(--ink); margin-top:7px; line-height:1.45; font-style:italic }
+
+  /* Historique d'un exercice */
+  .hist-best{
+    background:rgba(245,197,66,.1); border:1px solid rgba(245,197,66,.3);
+    border-radius:12px; padding:10px 12px; font-size:14px; margin-bottom:12px;
+  }
+  .hist-best b{ font-size:16px }
+  .hist-best span{ color:var(--faint); font-size:12.5px }
+  .hist-rows{ display:flex; flex-direction:column; gap:9px }
+  .hist-row{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px }
+  .hr-date{ font-size:12px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--gold) }
+  .hr-date span{ font-size:14px }
+  .hr-perf{ font-size:14px; margin-top:3px }
+  .hr-note{ font-size:12.5px; color:var(--muted); font-style:italic; margin-top:5px; line-height:1.4 }
+
+  .guide-note{ font-size:11.5px; color:var(--faint); text-align:center; margin:0 }
+  .main-card .run-inputs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; position:relative }
+
+  /* Liste des exercices de la séance */
+  .exo-track{ margin-top:14px }
+  .track-title{
+    font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--faint); margin:0 0 9px 2px;
+  }
+  .exo-line{
+    display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+    background:var(--surface); border:1px solid var(--line); border-radius:13px;
+    padding:10px 12px; margin-bottom:8px; transition:transform .15s, border-color .2s;
+  }
+  .exo-line:active{ transform:scale(.985) }
+  .exo-line.on{
+    border-color:rgba(167,139,250,.55); background:rgba(167,139,250,.08);
+    box-shadow:0 0 0 1px rgba(167,139,250,.18), 0 6px 18px rgba(139,92,246,.14);
+  }
+  .exo-line.off{ opacity:.55 }
+  .el-ico{
+    flex:0 0 auto; width:36px; height:36px; border-radius:10px; display:flex;
+    align-items:center; justify-content:center; color:var(--gold);
+    background:rgba(255,255,255,.04); border:1.5px solid;
+  }
+  .el-ico svg{ width:17px; height:17px }
+  .el-txt{ flex:1; min-width:0 }
+  .el-txt b{ display:block; font-size:14px; font-weight:750; line-height:1.2;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .el-txt small{ display:block; font-size:11.5px; color:var(--faint); margin-top:2px }
+  .et{
+    flex:0 0 auto; font-size:9.5px; font-weight:800; letter-spacing:.05em;
+    text-transform:uppercase; padding:4px 8px; border-radius:7px;
+  }
+  .et.done{ color:var(--mint); background:rgba(52,211,153,.13) }
+  .et.cur{ color:var(--gold); background:rgba(167,139,250,.16) }
+  .et.partial{ color:var(--rest); background:rgba(255,138,61,.14) }
+  .et.todo{ color:var(--faint); background:rgba(255,255,255,.05) }
+
+  /* Barre de navigation de séance */
+  .run-nav{
+    display:grid; grid-template-columns:1fr 1fr 74px 1fr 1fr; align-items:end; gap:4px;
+    background:rgba(18,23,29,.92); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line); border-radius:18px; padding:8px 6px; margin-top:12px;
+  }
+  .rn-btn{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    color:var(--faint); padding:6px 2px; border-radius:12px;
+  }
+  .rn-btn small{ font-size:9.5px; font-weight:700; letter-spacing:.02em }
+  .rn-btn .rn-ico{ display:flex; align-items:center; justify-content:center }
+  .rn-btn:active{ color:var(--ink) }
+  .rn-btn.main{
+    color:var(--btn-ink); background:var(--gold); border-radius:50%;
+    width:64px; height:64px; min-width:64px; flex:0 0 64px; padding:0;
+    margin:-18px auto 0; gap:0; justify-self:center;
+    box-shadow:0 6px 20px rgba(139,92,246,.4);
+  }
+  .rn-btn.main small{ display:none }
+
+  /* Vue progression */
+  .prog-ring{ text-align:center; background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:16px }
+  .pr-big{ font-size:44px; font-weight:800; color:var(--gold); line-height:1 }
+  .pr-big small{ font-size:20px; margin-left:2px }
+  .pr-sub{ font-size:13px; color:var(--muted); margin-top:5px }
+
+  /* Barre de statistiques de séance */
+  .stats-bar{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:10px;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:11px 13px;
+  }
+  .sb-cell{ display:flex; align-items:center; gap:9px; min-width:0 }
+  .sb-ico{ font-size:17px; flex:0 0 auto; opacity:.9 }
+  .sb-txt{ min-width:0 }
+  .sb-txt label{ display:block; font-size:9.5px; font-weight:800; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--faint) }
+  .sb-txt b{ font-size:15px; font-weight:750; white-space:nowrap }
+
+  /* Portrait : disposition verticale compacte pour tout garder accessible */
+  @media (orientation:portrait){
+    .stats-bar{ grid-template-columns:repeat(2,1fr); gap:11px }
+    .run-side{ gap:8px }
+    .run-main{ margin-top:8px }
+    /* colonne du haut compacte : le contenu utile remonte dans l'écran */
+    .run-side .ring-wrap{ margin:0 }
+    .ring-wrap svg{ width:100%; max-width:142px; height:auto }
+    .ring-txt .big{ font-size:38px }
+    .ring-txt .big.mid{ font-size:32px }
+    .ring-txt small{ font-size:9.5px; max-width:120px; text-align:center; line-height:1.15 }
+    .run-top .rt-mid b{ font-size:14px; line-height:1.2 }
+    .cbtn{ width:46px; height:46px }
+    .cbtn.main{ width:56px; height:56px }
+    .end-btn{ padding:9px; font-size:13px }
+    .main-card{ padding:13px }
+    .mc-head b{ font-size:18px }
+    .auto-card{ max-width:none }
+    .end-btn{ max-width:none }
+    .ctrl-row{ margin-top:2px }
+    .main-card .run-inputs{ grid-template-columns:1fr 1fr }
+  }
+
   @media (orientation:landscape) and (max-height:540px){
 
     /* --- Navigation latérale --- */
@@ -742,60 +955,65 @@
     .prof-form .pf-row{ min-width:0 }
     .prof-form .pf-row .fld{ min-width:0 }
 
-    /* --- SÉANCE EN COURS : anneau | informations et actions ---
-       La grille CSS placerait chaque enfant sur sa propre ligne, ce qui
-       ré-empilerait tout. On utilise donc un flux flottant : l'anneau
-       flotte à gauche, le reste du contenu s'écoule à sa droite. */
-    .runner{ padding:8px 14px 14px calc(14px + env(safe-area-inset-left,0px)) }
-    /* L'anneau doit flotter dès le haut du contenu pour que titre, saisies et
-       actions s'écoulent à sa droite. On le sort du flux vertical en le
-       positionnant sous l'en-tête, et on décale la colonne de texte. */
-    #run-content{ display:block; overflow:hidden; position:relative }
-    #run-content > .run-top{ margin-bottom:2px }
-    #run-content > .ring-wrap{
-      position:absolute; left:0; top:56px; width:34%; max-width:170px; margin:0;
+    /* --- SÉANCE : colonne gauche 30 % | zone principale 70 % --- */
+    .runner{ padding:8px 14px 10px calc(14px + env(safe-area-inset-left,0px)) }
+    #run-content{ display:flex; flex-direction:column; height:100vh; gap:6px; overflow:hidden }
+    #run-content > .run-top{ flex:0 0 auto }
+    .run-body{
+      flex:1 1 auto; min-height:0;
+      display:grid; grid-template-columns:minmax(0,30%) minmax(0,70%); gap:14px;
     }
-    /* toute la colonne de droite est décalée de la largeur de l'anneau */
-    #run-content > *:not(.run-top):not(.ring-wrap):not(.ctrl-row){
-      margin-left:calc(34% + 14px); max-width:calc(66% - 14px);
+    .run-side{ gap:6px; justify-content:flex-start; min-height:0; overflow-y:auto; padding-bottom:2px }
+    .run-main{ min-height:0; overflow-y:auto; padding-right:2px; display:flex; flex-direction:column }
+    .run-main > .main-card{ flex:0 0 auto }
+    /* le bloc d'actions reste accessible en bas de la colonne */
+    .run-main > .run-actions{
+      position:sticky; bottom:0; margin-top:auto; padding-top:8px;
+      background:linear-gradient(to top, var(--bg) 62%, transparent);
     }
+    .main-card .run-inputs{ margin-top:10px }
+    .main-card .run-inputs .fld input{ padding:8px 10px; font-size:15px }
+    .run-side .ring-wrap{ margin:0 }
     .ring-wrap svg{ width:100%; max-width:150px; height:auto }
-    .ring-txt .big{ font-size:34px }
-    .ring-txt .big.mid{ font-size:26px }
-    .ring-lbl, #ring-lbl{ font-size:9.5px }
-    /* Les commandes restent dans le flux de droite, juste après les actions :
-       elles suivent ainsi la hauteur réelle du contenu et ne débordent pas. */
-    /* Les commandes reviennent sous l'anneau, dans l'espace libre à gauche */
-    #run-content > .ctrl-row{
-      position:absolute; left:0; top:216px; width:34%; max-width:170px;
-      margin:0; gap:8px; justify-content:center;
-    }
-    .cbtn{ width:40px; height:40px }
-    .cbtn.main{ width:50px; height:50px }
-    .cbtn svg{ width:20px; height:20px }
-    /* Colonne de droite : compacte pour tenir dans la hauteur */
-    .runner h2{ font-size:18px; margin-top:2px }
-    #run-content > .run-phase{ margin:0 }
-    #run-content > .run-target{ margin-top:3px; font-size:13.5px }
-    .serie-pills, .chip-row{ margin:6px 0 2px; gap:5px }
-    .run-inputs{ margin-top:6px; gap:8px }
-    .fld label{ font-size:10px; margin-bottom:3px }
-    .fld input{ padding:9px 10px; font-size:15px }
-    .info-cards{ margin-top:5px; gap:6px }
-    .info-cards .icard{ padding:6px 8px }
-    .info-cards .icard b{ font-size:13.5px }
-    .info-cards .icard label{ font-size:9px }
-    .run-actions{ margin-top:5px; gap:5px }
-    .run-actions .btn{ padding:10px 12px; font-size:13.5px }
-    .run-inputs .fld input{ padding:8px 10px }
-    #guide-line, .ann-line{ font-size:11px; margin-top:3px }
-    .rest-next{ margin-top:8px; padding:9px 10px }
-    .rest-next .rn-top{ margin-bottom:6px }
-    .rest-cell b{ font-size:14.5px }
-    .last-fb{ margin-top:7px; padding:8px 10px }
-    .lfb-note{ font-size:11.5px; margin-top:4px }
-    .lfb-edit{ margin-top:7px; padding:9px }
-    .ann-tl{ max-height:84px; overflow-y:auto }
+    .ring-txt .big{ font-size:32px }
+    .ring-txt .big.mid{ font-size:29px }
+    .ring-txt small{ font-size:8px; letter-spacing:.04em; max-width:110px; text-align:center; line-height:1.1 }
+    /* L'anneau affiche déjà le décompte : la carte de reprise ferait doublon
+       et consomme une hauteur précieuse. On la masque en paysage. */
+    .auto-card{ display:none }
+    .ctrl-row{ margin-top:6px; gap:12px }
+    .cbtn{ width:42px; height:42px }
+    .cbtn.main{ width:52px; height:52px }
+    .cbtn svg{ width:19px; height:19px }
+    /* Le bouton de fin devient compact et reste dans le flux visible */
+    .end-btn{ padding:9px; font-size:12.5px; max-width:none; margin-top:6px; flex:0 0 auto }
+    /* la colonne ne défile pas : son contenu doit tenir tel quel */
+    .run-side{ padding-bottom:0; overflow:visible; justify-content:center }
+    .ring-txt small{ font-size:9px; max-width:130px }
+    .phase-badge{ padding:4px 13px; font-size:11px }
+    .next-line{ margin:8px 0 10px; font-size:13.5px }
+    .main-card{ padding:12px }
+    .mc-ico{ width:40px; height:40px; border-radius:11px }
+    .mc-head b{ font-size:17.5px }
+    .mc-stats{ margin-top:11px; gap:9px }
+    .mc-stat{ padding:9px 6px }
+    .mc-stat b{ font-size:18px }
+    .mc-hint{ margin-top:9px; font-size:11.5px }
+    .last-fb{ margin-top:10px; padding:9px 11px }
+    .lfb-note{ font-size:12px; margin-top:5px }
+    .run-actions{ margin-top:10px }
+    .run-actions .btn{ padding:10px; font-size:13.5px }
+    .exo-track{ margin-top:11px }
+    .exo-line{ padding:8px 10px; margin-bottom:6px }
+    .el-ico{ width:31px; height:31px; border-radius:9px }
+    .el-txt b{ font-size:13px }
+    .el-txt small{ font-size:10.5px }
+    .et{ font-size:9px; padding:3px 7px }
+    .run-nav{ display:none }   /* en paysage, les commandes latérales suffisent */
+    .stats-bar{ flex:0 0 auto; padding:7px 10px; gap:7px }
+    .sb-txt label{ font-size:8.5px }
+    .sb-txt b{ font-size:12.5px }
+    .sb-ico{ font-size:14px }
 
     /* Décompte : reste centré sur tout l'écran */
     .countdown .cd-num{ font-size:88px }
@@ -850,6 +1068,54 @@
   @media (orientation:landscape) and (min-height:541px){
     .exo-list{ grid-template-columns:repeat(4,1fr) }
   }
+
+/* ============================================================
+     ANIMATIONS & MICRO-INTERACTIONS
+  ============================================================ */
+  /* Entrée en fondu des cartes, décalée pour un effet de cascade */
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
+  .main-card{ animation:fadeUp .34s cubic-bezier(.2,.7,.3,1) both }
+  .last-fb{ animation:fadeUp .34s cubic-bezier(.2,.7,.3,1) .06s both }
+  .stats-bar{ animation:fadeUp .34s cubic-bezier(.2,.7,.3,1) .1s both }
+  .exo-track{ animation:fadeUp .34s cubic-bezier(.2,.7,.3,1) .14s both }
+  .auto-card{ animation:fadeUp .34s cubic-bezier(.2,.7,.3,1) .04s both }
+
+  /* Boutons : léger enfoncement à l'appui */
+  .btn, .cbtn, .mc-edit, .lfb-hist, .exo-line, .ce-step, .nav button{
+    transition:transform .13s cubic-bezier(.2,.7,.3,1), background .2s, border-color .2s, box-shadow .2s;
+  }
+  .btn:active{ transform:scale(.975) }
+  .cbtn:active{ transform:scale(.92) }
+  .cbtn.main:active{ transform:scale(.94) }
+  .mc-edit:active, .lfb-hist:active, .ce-step:active{ transform:scale(.94) }
+  .nav button:active{ transform:scale(.9) }
+
+  /* Anneau : progression fluide */
+  #ring-arc{ transition:stroke-dashoffset .45s cubic-bezier(.35,.8,.4,1), stroke .3s }
+  /* Pulsation douce du chrono dans les dernières secondes */
+  @keyframes softPulse{ 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.055) } }
+  .ring-txt .big.urgent{ animation:softPulse 1s ease-in-out infinite }
+
+  /* Barre de progression de séance : avance en continu */
+  .run-prog i{ transition:width .5s cubic-bezier(.35,.8,.4,1) }
+
+  /* Compteurs : petit rebond lors d'un changement de valeur */
+  @keyframes bump{ 0%{ transform:scale(1) } 40%{ transform:scale(1.14) } 100%{ transform:scale(1) } }
+  .bump{ animation:bump .32s cubic-bezier(.2,.7,.3,1) }
+
+  /* Badge de phase : apparition */
+  @keyframes slideIn{ from{ opacity:0; transform:translateX(-8px) } to{ opacity:1; transform:none } }
+  .phase-badge{ animation:slideIn .3s cubic-bezier(.2,.7,.3,1) both }
+
+  /* Ligne d'exercice active : léger halo respirant */
+  @keyframes glow{
+    0%,100%{ box-shadow:0 0 0 1px rgba(167,139,250,.18), 0 6px 18px rgba(139,92,246,.12) }
+    50%{ box-shadow:0 0 0 1px rgba(167,139,250,.3), 0 8px 24px rgba(139,92,246,.22) }
+  }
+  .exo-line.on{ animation:glow 2.6s ease-in-out infinite }
+
+  /* Bascule d'orientation : évite le saut visuel */
+  .run-body{ transition:gap .2s }
 
   @media (prefers-reduced-motion:reduce){
     *{transition:none !important;animation:none !important}
@@ -1009,7 +1275,7 @@
   <p class="eyebrow" style="margin-top:18px">Application</p>
   <button class="btn ghost" id="btn-update" style="width:100%">🔄 Mettre à jour l'application</button>
   <p class="desc" id="app-ver" style="text-align:center;margin-top:8px"></p>
-  <p class="about">The Forge · Lot 27<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
+  <p class="about">The Forge · Lot 30<br>Bibliothèque d'exercices · <span id="about-count"></span> exercices<br>Toutes tes données restent sur ton téléphone.</p>
 </main>
 
 <!-- Feuille de détail exercice -->
@@ -2632,16 +2898,21 @@ window.lastFeedbackFor = lastFeedbackFor;
 function lastFeedbackHTML(exoId){
   var fb = lastFeedbackFor(exoId);
   if(!fb) return "";
-  var meta = [];
-  if(fb.ts) meta.push(new Date(fb.ts).toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"}));
+  var date = fb.ts ? new Date(fb.ts).toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"}) : "";
   var perf = [];
   if(fb.charge != null) perf.push(String(fb.charge).replace(".", ",") + " kg");
   if(fb.nbSeries && fb.reps) perf.push(fb.nbSeries + " × " + fb.reps);
   else if(fb.mode === "time" && fb.dureeSec) perf.push(fmtRepos(fb.dureeSec));
   return '<div class="last-fb">' +
-    '<div class="lfb-head">📝 Dernier ressenti' +
-      (fb.ressenti ? '<span class="lfb-emo">' + FEEL_EMO[fb.ressenti-1] + '</span>' : '') + '</div>' +
-    (meta.length ? '<div class="lfb-date">' + esc(meta[0]) + '</div>' : '') +
+    '<div class="lfb-top">' +
+      '<div class="lfb-head">📝 Dernier ressenti' +
+        (fb.ressenti ? ' <span class="lfb-emo">' + FEEL_EMO[fb.ressenti-1] + '</span>' : '') + '</div>' +
+      '<button class="lfb-hist" data-runact="voir-historique" data-exo="'+exoId+'">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+        'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/></svg> Voir historique</button>' +
+    '</div>' +
+    (date ? '<div class="lfb-date">📅 ' + esc(date) + '</div>' : '') +
     (perf.length ? '<div class="lfb-perf">' + esc(perf.join(" · ")) + '</div>' : '') +
     '<div class="lfb-note">« ' + esc(fb.note) + ' »</div>' +
     '</div>';
@@ -2661,7 +2932,7 @@ function refreshRestCard(){
   if(!RUN || !RUN.restCtx) return;
   var rc = $("#run-content");
   if(!rc) return;
-  var card = rc.querySelector(".rest-next");
+  var card = rc.querySelector(".main-card");
   if(!card) return;
   var info = buildRestInfo(RUN.restCtx.idx, RUN.restCtx.serie);
   if(!info) return;
@@ -2725,9 +2996,18 @@ function refreshHeader(){
   var e1 = $("#run-elapsed"), e2 = $("#run-pct"), e3 = $("#run-prog-bar");
   if(e1) e1.textContent = elapsedStr();
   var pct = sessProgress();
-  if(e2) e2.textContent = pct;
+  if(e2 && e2.textContent !== String(pct)){ e2.textContent = pct; bump(e2); }
   if(e3) e3.style.width = pct + "%";
 }
+/* Petit rebond visuel lorsqu'une valeur change (sans reconstruire l'écran) */
+function bump(el){
+  if(!el) return;
+  el.classList.remove("bump");
+  void el.offsetWidth;   /* force le redémarrage de l'animation */
+  el.classList.add("bump");
+}
+window.bump = bump;
+window.refreshHeader = refreshHeader;
 
 /* --- Anneau de progression SVG --- */
 function ring(pct, color, inner, mid){
@@ -2902,32 +3182,43 @@ function showWork(){
   /* charge résolue : identique à celle annoncée pendant le repos */
   var chNext = chargeForNext(RUN.idx, RUN.serie);
   $("#run-content").innerHTML = runTop() +
-    '<p class="run-phase" style="color:'+CATS[x.c].hex+'">'+CATS[x.c].label+'</p>' +
-    '<h2>'+esc(x.n)+'</h2>' +
-    '<div class="chip-row">' +
-    '<span class="rchip gold">Série '+RUN.serie+' / '+ex.series+'</span>' +
-    '<span class="rchip">'+ex.series+' × '+esc(tgt.reps || "?")+'</span>' +
-    (tgt.charge ? '<span class="rchip">'+esc(tgt.charge)+' kg</span>' : '') +
-    '</div>' +
-    ring(0, CATS[x.c].hex, repGuideOn() ? "0" : esc(String(tgt.reps||"—")), false) +
-    '<p class="run-target" style="text-align:center">Objectif : '+esc(tgt.reps || "?")+' répétitions'+(tgt.charge ? ' à '+esc(tgt.charge)+' kg' : '')+'</p>' +
-    (sugg ? '<p class="seg-next" style="margin-top:2px">💡 Suggestion Forge : <b style="color:var(--gold)">'+sugg.w+' kg</b> ('+sugg.src+')</p>' : '') +
-    '<p class="seg-next" id="guide-line" style="margin:2px 0 0"></p>' +
-    '<div class="run-inputs">' +
-    '<div class="fld"><label>Répétitions faites</label><input id="run-reps" inputmode="numeric" value="'+esc(tgt.reps||"")+'"></div>' +
-    '<div class="fld"><label>Charge (kg)</label><input id="run-charge" inputmode="decimal" value="'+esc(chNext.val || "")+'"></div>' +
-    '</div>' +
-    '<div class="info-cards">' +
-    '<div class="icard"><label>Charge</label><b'+(chNext.val ? '' : ' style="font-size:13.5px;color:var(--muted)"')+'>'+chNext.txt+'</b></div>' +
-    '<div class="icard"><label>Tempo</label><b>'+repTempo(x, RUN.type)+' s/rép</b></div>' +
-    '<div class="icard"><label>Repos</label><b>'+fmtRepos(ex.reposSerie)+'</b></div>' +
-    '</div>' +
-    '<div class="run-actions" style="margin-top:12px">' +
-    '<button class="btn primary" data-runact="serie-ok">Terminer la série '+RUN.serie+'/'+ex.series+'</button>' +
-    '<div class="txt-row">' +
-    '<button class="btn ghost" data-runact="replace">⇄ Remplacer</button>' +
-    '<button class="btn ghost" data-runact="skip-exo">Passer</button>' +
-    '</div></div>' + ctrlRow();
+    '<div class="run-body">' +
+      '<div class="run-side">' +
+        ring(0, CATS[x.c].hex, repGuideOn() ? "0" : esc(String(tgt.reps||"—")), false) +
+        '<p class="guide-note" id="guide-line"></p>' +
+        ctrlRow() +
+        '<button class="btn end-btn" data-runact="quit">⚑ Finir l\'entraînement</button>' +
+      '</div>' +
+      '<div class="run-main">' +
+        '<div class="phase-badge work" style="color:'+CATS[x.c].hex+';border-color:'+CATS[x.c].hex+'55;background:'+CATS[x.c].hex+'1c">'+CATS[x.c].label+'</div>' +
+        '<div class="main-card">' +
+          '<div class="mc-bg">'+exoArt(x.c)+'</div>' +
+          '<div class="mc-head">' +
+            '<span class="mc-ico" style="border-color:'+CATS[x.c].hex+'">'+exoIcon(x.c)+'</span>' +
+            '<div><small>Exercice en cours</small><b>'+esc(x.n)+'</b></div>' +
+          '</div>' +
+          '<div class="mc-stats">' +
+            '<div class="mc-stat"><label>Série</label><b>'+RUN.serie+' / '+ex.series+'</b></div>' +
+            '<div class="mc-stat"><label>Répétitions</label><b>'+esc(tgt.reps || "?")+'</b></div>' +
+            '<div class="mc-stat charge"><label>Charge</label>' +
+              '<b'+(chNext.val ? '' : ' class="soft"')+'>'+chNext.txt+'</b></div>' +
+          '</div>' +
+          (sugg ? '<p class="mc-hint">💡 Charge suggérée par The Forge — ajuste-la si besoin</p>' : '') +
+          '<div class="run-inputs">' +
+            '<div class="fld"><label>Répétitions faites</label><input id="run-reps" inputmode="numeric" value="'+esc(tgt.reps||"")+'"></div>' +
+            '<div class="fld"><label>Charge (kg)</label><input id="run-charge" inputmode="decimal" value="'+esc(chNext.val || "")+'"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="run-actions">' +
+          '<button class="btn primary" data-runact="serie-ok">Terminer la série '+RUN.serie+'/'+ex.series+'</button>' +
+          '<div class="run-row">' +
+            '<button class="btn ghost" data-runact="replace">⇄ Remplacer</button>' +
+            '<button class="btn ghost" data-runact="skip-exo">Passer</button>' +
+          '</div>' +
+        '</div>' +
+        exoListHTML() +
+      '</div>' +
+    '</div>' + statsBarHTML() + runNavHTML();
   var lbl = $("#ring-lbl"); if(lbl) lbl.textContent = "répétitions";
   if(!RUN.paused) startRepGuide();
 }
@@ -3096,29 +3387,75 @@ function loadIndicator(exoId, charge){
   if(c < prev) return ' <span class="ld down">▼</span>';
   return "";
 }
+/* Statistiques de séance en direct : volume soulevé, durée estimée,
+   exercices restants, récupération conseillée, calories. */
+function runStats(){
+  var volume = 0, seriesFaites = 0;
+  RUN.log.forEach(function(l, i){
+    if(!l) return;
+    seriesFaites += l.series.length;
+    l.series.forEach(function(s){
+      var c = parseFloat(String(s.charge || "").replace(",", "."));
+      var r = parseInt(String(s.reps || "").match(/\d+/) ? String(s.reps).match(/\d+/)[0] : "0", 10);
+      if(!isNaN(c) && r) volume += c * r;
+    });
+  });
+  /* exercices restants : ceux qui n'ont pas atteint leur nombre de séries */
+  var restants = 0;
+  RUN.exos.forEach(function(ex, i){
+    var faites = RUN.log[i] ? RUN.log[i].series.length : 0;
+    var cible = ex.mode === "time" ? 1 : (ex.series || 1);
+    if(faites < cible) restants++;
+  });
+  /* durée estimée : temps écoulé rapporté à l'avancement */
+  var ecoule = Math.round((Date.now() - RUN.startTs) / 1000);
+  var pct = sessProgress();
+  var totalEst = pct > 4 ? Math.round(ecoule / (pct / 100)) : 0;
+  var reste = totalEst ? Math.max(0, totalEst - ecoule) : 0;
+  /* récupération conseillée d'après le repos prévu sur l'exercice courant */
+  var ex = RUN.exos[RUN.idx];
+  var rep = ex ? (ex.reposSerie || 90) : 90;
+  var recup = rep >= 150 ? "3 - 4 min" : rep >= 100 ? "2 - 3 min" : rep >= 60 ? "1 - 2 min" : "45 - 60 s";
+  var kcal = computeSessionKcal(
+    RUN.log.filter(Boolean).map(function(l){ return l; }), ecoule, RUN.type);
+  return { volume:Math.round(volume), seriesFaites:seriesFaites, restants:restants,
+    resteSec:reste, totalEst:totalEst, recup:recup, kcal:kcal, ecoule:ecoule };
+}
+window.runStats = runStats;
+
+/* Barre de statistiques (bas de l'écran de séance) */
+function statsBarHTML(){
+  var s = runStats();
+  function cell(ico, label, val){
+    return '<div class="sb-cell"><span class="sb-ico">'+ico+'</span>' +
+      '<div class="sb-txt"><label>'+label+'</label><b>'+val+'</b></div></div>';
+  }
+  return '<div class="stats-bar">' +
+    cell('🏋️', 'Volume estimé', s.volume ? s.volume.toLocaleString("fr-FR") + ' kg' : '—') +
+    cell('⏱️', 'Durée séance', s.totalEst ? '~ ' + Math.round(s.totalEst/60) + ' min' : '—') +
+    cell('📋', 'Exercices restants', s.restants) +
+    cell('💤', 'Récupération', s.recup) +
+    cell('🔥', 'Calories', s.kcal ? s.kcal + ' kcal' : '—') +
+    '</div>';
+}
+function refreshStatsBar(){
+  var bar = $(".stats-bar");
+  if(!bar) return;
+  var tmp = document.createElement("div");
+  tmp.innerHTML = statsBarHTML();
+  bar.replaceWith(tmp.firstElementChild);
+}
+window.statsBarHTML = statsBarHTML;
+
 function restInfoCard(info){
   if(!info) return "";
-  var thumb = sessThumbHTML(null, CATS[info.cat] ? CATS[info.cat].hex : "var(--rest)");
-  var cells = "";
-  if(info.mode === "time"){
-    cells = '<div class="rest-cell"><label>Durée</label><b>'+fmtRepos(info.dur||0)+'</b></div>' +
-      '<div class="rest-cell"><label>Type</label><b style="font-size:13px">Chrono</b></div>' +
-      '<div class="rest-cell"><label>Série</label><b>'+info.serieLabel+'</b></div>';
-  }else{
-    var loadInd = loadIndicator(info.exoId, info.charge);
-    cells = '<div class="rest-cell"><label>Série</label><b>'+info.serieNum+'/'+info.totalSeries+'</b></div>' +
-      '<div class="rest-cell"><label>Répétitions</label><b>'+esc(info.reps||"?")+'</b></div>' +
-      '<div class="rest-cell charge"><label>Charge</label><b'+
-      (info.charge === null ? ' style="font-size:13.5px;color:var(--muted)"' : '')+'>'+
-      info.chargeTxt+loadInd+'</b></div>';
-  }
-  var hint = "";
-  if(info.chargeSrc === "suggestion") hint = '💡 Charge suggérée par The Forge — ajuste-la si besoin';
-  else if(info.chargeSrc === "série précédente") hint = 'Charge reprise de ta série précédente';
-  else if(info.chargeSrc === "none") hint = 'Aucune charge prévue — saisis la tienne au départ';
-  var corps;
+  var accent = CATS[info.cat] ? CATS[info.cat].hex : "var(--gold)";
+  /* Mode édition de charge : la carte bascule en ajusteur */
   if(RUN && RUN.editCharge && info.mode === "reps"){
-    corps = '<div class="charge-edit">' +
+    return '<div class="main-card">' +
+      '<div class="mc-head"><span class="mc-ico" style="border-color:'+accent+'">'+exoIcon(info.cat)+'</span>' +
+      '<div><small>Prochain exercice</small><b>'+esc(info.name)+'</b></div></div>' +
+      '<div class="charge-edit">' +
       '<label>Charge prévue pour cet exercice</label>' +
       '<div class="ce-row">' +
         '<button class="ce-step" data-runact="ce-minus">−2,5</button>' +
@@ -3130,18 +3467,57 @@ function restInfoCard(info){
       '<div class="ce-actions">' +
         '<button class="btn ghost" data-runact="ce-cancel">Annuler</button>' +
         '<button class="btn primary" data-runact="ce-ok">Valider</button>' +
-      '</div></div>';
-  }else{
-    corps = '<div class="rest-grid">'+cells+'</div>' +
-      (hint ? '<p class="rest-hint">'+hint+'</p>' : '') +
-      lastFeedbackHTML(info.exoId) +
-      (info.mode === "reps"
-        ? '<button class="btn ghost lfb-edit" data-runact="edit-charge">⚖️ Modifier les charges</button>' : '');
+      '</div></div></div>';
   }
-  return '<div class="rest-next"><div class="rn-top">'+thumb+
-    '<div class="rn-lbl"><small>Prochain exercice</small><b>'+esc(info.name)+'</b></div></div>' +
-    corps + '</div>';
+
+  var cells;
+  if(info.mode === "time"){
+    cells =
+      '<div class="mc-stat"><label>Durée</label><b>'+fmtRepos(info.dur||0)+'</b></div>' +
+      '<div class="mc-stat"><label>Type</label><b>Chrono</b></div>' +
+      '<div class="mc-stat"><label>Série</label><b>'+info.serieLabel+'</b></div>';
+  }else{
+    var loadInd = loadIndicator(info.exoId, info.charge);
+    cells =
+      '<div class="mc-stat"><label>Série</label><b>'+info.serieNum+' / '+info.totalSeries+'</b></div>' +
+      '<div class="mc-stat"><label>Répétitions</label><b>'+esc(info.reps||"?")+'</b></div>' +
+      '<div class="mc-stat charge"><label>Charge</label>' +
+        '<b'+(info.charge === null ? ' class="soft"' : '')+'>'+info.chargeTxt+loadInd+'</b>' +
+        '<button class="mc-edit" data-runact="edit-charge">✎ Modifier</button></div>';
+  }
+
+  var hint = "";
+  if(info.chargeSrc === "suggestion") hint = 'Charge suggérée par The Forge — ajuste-la si besoin';
+  else if(info.chargeSrc === "série précédente") hint = 'Charge reprise de ta série précédente';
+  else if(info.chargeSrc === "none") hint = 'Aucune charge prévue — saisis la tienne au départ';
+
+  return '<div class="main-card">' +
+    '<div class="mc-bg">'+exoArt(info.cat)+'</div>' +
+    '<div class="mc-head">' +
+      '<span class="mc-ico" style="border-color:'+accent+'">'+exoIcon(info.cat)+'</span>' +
+      '<div><small>Prochain exercice</small><b>'+esc(info.name)+'</b></div>' +
+    '</div>' +
+    '<div class="mc-stats">'+cells+'</div>' +
+    (hint ? '<p class="mc-hint">💡 '+hint+'</p>' : '') +
+    lastFeedbackHTML(info.exoId) +
+    '</div>';
 }
+
+/* Petite icône d'exercice (dans le carré violet de l'en-tête) */
+function exoIcon(cat){
+  return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round"><path d="M4 9v6M20 9v6M7 6v12M17 6v12M7 12h10"/></svg>';
+}
+/* Illustration de fond, très discrète (10-15% d'opacité) */
+function exoArt(cat){
+  return '<svg viewBox="0 0 200 120" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M20 50v20M32 44v32M168 50v20M156 44v32M32 60h124"/>' +
+    '<circle cx="100" cy="86" r="12"/><path d="M100 74V60M88 96l-10 12M112 96l10 12"/>' +
+    '</svg>';
+}
+
+
 function showRest(sec, nextLabel, after, kind, nextName, info){
   RUN.afterRest = after;
   RUN.editCharge = false;
@@ -3151,26 +3527,42 @@ function showRest(sec, nextLabel, after, kind, nextName, info){
   if(kind === "exo" && nextName) speak("Repos. Prochain exercice : " + nextName + ".");
   RUN.restTotal = sec;
   var restMarks = {60:1,30:1,15:1,10:1};
+
   $("#run-content").innerHTML = runTop() +
-    '<p class="run-phase" style="color:var(--rest)">Repos</p>' +
-    '<p class="run-target" style="text-align:center;margin-top:2px">'+esc(nextLabel)+'</p>' +
-    ring(1, "var(--rest)", '<span id="bt" style="color:var(--rest)">'+fmtClock(sec)+'</span>', true) +
-    '<p class="ann-line" id="next-ann"></p>' +
-    restInfoCard(info) +
-    '<div class="run-actions">' +
-    '<div class="run-row">' +
-    '<button class="btn ghost" data-runact="rest-minus">− 15 s</button>' +
-    '<button class="btn ghost" data-runact="rest-plus">+ 15 s</button>' +
-    '</div>' +
-    '<button class="btn primary" data-runact="rest-skip">Passer le repos</button>' +
-    '</div>' + ctrlRow();
+    '<div class="run-body">' +
+      '<div class="run-side">' +
+        ring(1, "var(--rest)", '<span id="bt" style="color:var(--rest)">'+fmtClock(sec)+'</span>', true) +
+        '<div class="auto-card" id="auto-card">' +
+          '<div class="ac-txt"><small>Reprise automatique</small>' +
+            '<span>Prochain exercice dans</span><b id="next-ann-v">'+fmtClock(sec)+'</b></div>' +
+          '<span class="ac-ico">⏱️</span>' +
+        '</div>' +
+        ctrlRow() +
+        '<button class="btn end-btn" data-runact="quit">⚑ Finir l\'entraînement</button>' +
+      '</div>' +
+      '<div class="run-main">' +
+        '<div class="phase-badge rest">Repos</div>' +
+        '<p class="next-line">Prochain exercice : <b>'+esc(nextName || (info ? info.name : ""))+'</b></p>' +
+        restInfoCard(info) +
+        '<div class="run-actions">' +
+          '<div class="run-row">' +
+            '<button class="btn ghost" data-runact="rest-minus">− 15 s</button>' +
+            '<button class="btn ghost" data-runact="rest-plus">+ 15 s</button>' +
+            '<button class="btn primary" data-runact="rest-skip">Passer le repos</button>' +
+          '</div>' +
+        '</div>' +
+        exoListHTML() +
+      '</div>' +
+    '</div>' + statsBarHTML() + runNavHTML();
+
   var rl = $("#ring-lbl"); if(rl) rl.textContent = "repos restant";
   startTimer(sec, function(rem){
     var el = $("#bt"); if(el) el.textContent = fmtClock(rem);
+    var big = el ? el.closest(".big") : null;
+    if(big) big.classList.toggle("urgent", rem <= 5 && rem > 0);
     setRing(rem / Math.max(RUN.restTotal, rem, 1));
     refreshHeader();
-    var na = $("#next-ann"), d = nextAnnounceIn(rem, restMarks);
-    if(na) na.innerHTML = d !== null ? 'Prochaine annonce dans <b style="color:var(--rest)">' + fmtClock(d) + '</b>' : "";
+    var nv = $("#next-ann-v"); if(nv) nv.textContent = fmtClock(rem);
     if(voiceOn()) announceRemaining(rem);
     else if(rem >= 1 && rem <= 3) beep(600, 0.08);
   }, function(){
@@ -3288,6 +3680,115 @@ function closeRunner(){
 window.closeRunner = closeRunner;
 
 /* --- Liste des exercices de la séance (états + navigation) --- */
+/* Liste des exercices de la séance, intégrée sous la carte principale.
+   Le prochain exercice est mis en évidence. */
+/* Barre de navigation de séance : accès rapides, bouton central proéminent.
+   Reste visible pendant tout l'entraînement. */
+/* Vue « Progression » : avancement détaillé de la séance en cours */
+function openRunProgress(){
+  var s = runStats();
+  var pct = sessProgress();
+  var faits = RUN.exos.length - s.restants;
+  var html = '<div class="grab"></div><p class="eyebrow">Progression de la séance</p>' +
+    '<h2 style="margin-bottom:12px">'+esc(RUN.sessNom)+'</h2>' +
+    '<div class="prog-ring">' +
+      '<div class="pr-big">'+pct+'<small>%</small></div>' +
+      '<div class="pr-sub">'+faits+' / '+RUN.exos.length+' exercices terminés</div>' +
+      '<div class="comp-bar" style="margin-top:10px"><i style="width:'+pct+'%;background:var(--gold)"></i></div>' +
+    '</div>' +
+    '<div class="stats-bar" style="grid-template-columns:repeat(2,1fr);margin-top:14px">' +
+      '<div class="sb-cell"><span class="sb-ico">⏱️</span><div class="sb-txt"><label>Temps écoulé</label><b>'+fmtClock(s.ecoule)+'</b></div></div>' +
+      '<div class="sb-cell"><span class="sb-ico">🏋️</span><div class="sb-txt"><label>Volume soulevé</label><b>'+(s.volume?s.volume.toLocaleString("fr-FR")+' kg':'—')+'</b></div></div>' +
+      '<div class="sb-cell"><span class="sb-ico">📋</span><div class="sb-txt"><label>Séries effectuées</label><b>'+s.seriesFaites+'</b></div></div>' +
+      '<div class="sb-cell"><span class="sb-ico">🔥</span><div class="sb-txt"><label>Calories</label><b>'+(s.kcal?s.kcal+' kcal':'—')+'</b></div></div>' +
+    '</div>' + exoListHTML();
+  $("#sheet-content").innerHTML = html;
+  $("#overlay").classList.add("show");
+  $("#exo-sheet").classList.add("show");
+}
+window.openRunProgress = openRunProgress;
+
+/* Réglages rapides accessibles sans quitter la séance */
+function openRunSettings(){
+  function sw(id, on, titre, desc){
+    return '<div class="set-item"><div class="t"><b>'+titre+'</b><span>'+desc+'</span></div>' +
+      '<button class="switch'+(on?' on':'')+'" data-runset="'+id+'"></button></div>';
+  }
+  $("#sheet-content").innerHTML = '<div class="grab"></div>' +
+    '<p class="eyebrow">Réglages de la séance</p>' +
+    '<div class="set-group" style="margin-top:8px">' +
+      sw("voice", state.data.settings.voice !== false, "Annonces vocales", "Repos, transitions et décomptes à voix haute") +
+      sw("repGuide", state.data.settings.repGuide !== false, "Guide de rythme", "Un bip à chaque répétition") +
+      sw("preCountdown", state.data.settings.preCountdown !== false, "Décompte de préparation", "5, 4, 3, 2, 1 avant chaque reprise") +
+      sw("fullscreen", state.data.settings.fullscreen !== false, "Plein écran", "Écran maintenu allumé pendant l'effort") +
+    '</div>';
+  $("#overlay").classList.add("show");
+  $("#exo-sheet").classList.add("show");
+}
+window.openRunSettings = openRunSettings;
+/* Interrupteurs des réglages rapides (délégation d'événement, une seule fois) */
+(function(){
+  var wired = false;
+  function wire(){
+    if(wired) return; wired = true;
+    var host = document.getElementById("sheet-content");
+    if(!host) return;
+    host.addEventListener("click", function(ev){
+      var b = ev.target.closest("[data-runset]");
+      if(!b) return;
+      var k = b.getAttribute("data-runset");
+      state.data.settings[k] = state.data.settings[k] === false;
+      saveState();
+      b.classList.toggle("on", state.data.settings[k] !== false);
+      if(k === "fullscreen"){ state.data.settings[k] !== false ? fsEnter() : fsExit(); }
+    });
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);
+  else wire();
+})();
+
+function runNavHTML(){
+  function b(act, ico, label, cls){
+    return '<button class="rn-btn'+(cls?' '+cls:'')+'" data-runact="'+act+'" aria-label="'+label+'">' +
+      '<span class="rn-ico">'+ico+'</span><small>'+label+'</small></button>';
+  }
+  var pauseIco = RUN.paused
+    ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>'
+    : '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+  return '<div class="run-nav">' +
+    b("list", '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>', "Séance") +
+    b("nav-hist", '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/></svg>', "Historique") +
+    b("pause-sess", pauseIco, RUN.paused ? "Reprendre" : "Pause", "main") +
+    b("nav-stats", '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>', "Progression") +
+    b("nav-set", '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>', "Réglages") +
+    '</div>';
+}
+window.runNavHTML = runNavHTML;
+
+function exoListHTML(){
+  var html = '<div class="exo-track"><p class="track-title">Exercices de la séance</p>';
+  RUN.exos.forEach(function(ex, i){
+    var x = getExo(ex.exoId);
+    if(!x) return;
+    var st = exoState(i);
+    var faites = RUN.log[i] ? RUN.log[i].series.length : 0;
+    var meta = ex.mode === "time"
+      ? fmtRepos(segTotal(ex))
+      : (st === "cur" || st === "partial" ? faites + " / " + ex.series : ex.series + " × " + esc(ex.reps || "?")) +
+        (ex.charge ? " · " + esc(String(ex.charge).replace(".", ",")) + " kg" : "");
+    var etat = st === "done" ? '<span class="et done">✓ Terminé</span>'
+      : st === "cur" ? '<span class="et cur">En cours</span>'
+      : st === "partial" ? '<span class="et partial">En pause</span>'
+      : '<span class="et todo">À venir</span>';
+    html += '<div class="exo-line'+(st === "cur" ? " on" : "")+(st === "done" ? " off" : "")+'" data-runact="goto-exo" data-i="'+i+'">' +
+      '<span class="el-ico" style="border-color:'+CATS[x.c].hex+'">'+exoIcon(x.c)+'</span>' +
+      '<div class="el-txt"><b>'+esc(x.n)+'</b><small>'+esc(meta)+'</small></div>' +
+      etat + '</div>';
+  });
+  return html + '</div>';
+}
+window.exoListHTML = exoListHTML;
+
 function exoState(i){
   var ex = RUN.exos[i], l = RUN.log[i];
   var doneUnits = !l ? 0 : (ex.mode === "time" ? (l.dureeSec > 0 ? 1 : 0) : l.series.length);
@@ -3295,6 +3796,70 @@ function exoState(i){
   if(i === RUN.idx) return "cur";
   return doneUnits >= total ? "done" : (doneUnits > 0 ? "partial" : "todo");
 }
+/* Historique complet d'un exercice : les dernières séances où il a été réalisé */
+function openExoHistory(exoId){
+  var x = getExo(exoId);
+  var hist = (state.data.history || []);
+  var lignes = [];
+  hist.forEach(function(e){
+    (e.exos || []).forEach(function(l){
+      if(l.exoId !== exoId) return;
+      var series = l.series || [];
+      if(!series.length && !l.dureeSec) return;
+      var charges = [], reps = [];
+      series.forEach(function(s){
+        var c = parseFloat(String(s.charge || "").replace(",", "."));
+        if(!isNaN(c)) charges.push(c);
+        var r = String(s.reps || "").trim(); if(r) reps.push(r);
+      });
+      var vol = 0;
+      series.forEach(function(s){
+        var c = parseFloat(String(s.charge || "").replace(",", "."));
+        var r = parseInt(String(s.reps || "").match(/\d+/) ? String(s.reps).match(/\d+/)[0] : "0", 10);
+        if(!isNaN(c) && r) vol += c * r;
+      });
+      lignes.push({
+        ts: e.ts || 0,
+        charge: charges.length ? Math.max.apply(null, charges) : null,
+        reps: reps.join(" / "), nb: series.length, vol: Math.round(vol),
+        note: (l.note || "").trim(), ressenti: l.ressenti || 0,
+        duree: l.dureeSec || 0, mode: l.mode
+      });
+    });
+  });
+  lignes.sort(function(a, b){ return b.ts - a.ts; });
+
+  var html = '<div class="grab"></div>' +
+    '<p class="eyebrow">Historique de l\'exercice</p>' +
+    '<h2 style="margin-bottom:10px">'+esc(x ? x.n : "Exercice")+'</h2>';
+  if(!lignes.length){
+    html += '<div class="day-empty">Aucune séance enregistrée pour cet exercice.' +
+      '<span>Les performances apparaîtront ici après ta première série.</span></div>';
+  }else{
+    var best = lignes.reduce(function(a, b){ return (b.charge || 0) > (a.charge || 0) ? b : a; });
+    if(best.charge != null)
+      html += '<div class="hist-best">🏆 Record : <b>' + String(best.charge).replace(".", ",") + ' kg</b>' +
+        ' <span>· ' + new Date(best.ts).toLocaleDateString("fr-FR", {day:"numeric", month:"short", year:"numeric"}) + '</span></div>';
+    html += '<div class="hist-rows">';
+    lignes.slice(0, 20).forEach(function(l){
+      var perf = l.mode === "time" && l.duree
+        ? fmtRepos(l.duree)
+        : (l.charge != null ? String(l.charge).replace(".", ",") + " kg · " : "") + l.nb + " × " + esc(l.reps || "?");
+      html += '<div class="hist-row">' +
+        '<div class="hr-date">' + new Date(l.ts).toLocaleDateString("fr-FR", {day:"numeric", month:"short", year:"numeric"}) +
+          (l.ressenti ? ' <span>' + FEEL_EMO[l.ressenti-1] + '</span>' : '') + '</div>' +
+        '<div class="hr-perf">' + esc(perf) + (l.vol ? ' · ' + l.vol.toLocaleString("fr-FR") + ' kg' : '') + '</div>' +
+        (l.note ? '<div class="hr-note">« ' + esc(l.note) + ' »</div>' : '') +
+        '</div>';
+    });
+    html += '</div>';
+  }
+  $("#sheet-content").innerHTML = html;
+  $("#overlay").classList.add("show");
+  $("#exo-sheet").classList.add("show");
+}
+window.openExoHistory = openExoHistory;
+
 function openExoList(){
   var html = '<div class="grab"></div><p class="eyebrow">Exercices de la séance</p>';
   RUN.exos.forEach(function(ex, i){
@@ -3473,6 +4038,20 @@ function wireRunner(){
     }
     else if(act === "replace"){ stopRepGuide(); openPicker(null, "replace"); }
     else if(act === "list") openExoList();
+    else if(act === "nav-hist"){
+      var exc = RUN.exos[RUN.idx];
+      if(exc) openExoHistory(exc.exoId);
+    }
+    else if(act === "nav-stats") openRunProgress();
+    else if(act === "nav-set") openRunSettings();
+    else if(act === "goto-exo"){
+      var gi = parseInt(b.getAttribute("data-i"), 10);
+      if(!isNaN(gi) && gi !== RUN.idx) gotoExo(gi);
+    }
+    else if(act === "voir-historique"){
+      var eid = parseInt(b.getAttribute("data-exo"), 10);
+      if(!isNaN(eid)) openExoHistory(eid);
+    }
     else if(act === "prev-exo") gotoExo(RUN.idx - 1);
     else if(act === "next-exo"){
       if(RUN.idx < RUN.exos.length - 1) gotoExo(RUN.idx + 1);
@@ -5277,7 +5856,7 @@ function init(){
     if(c) openExo(parseInt(c.getAttribute("data-id"),10));
   });
 }
-var APP_VERSION = "27";
+var APP_VERSION = "30";
 window.APP_VERSION = APP_VERSION;
 /* Environnement : application native (Capacitor) ou PWA web ? */
 var IS_NATIVE = (function(){
